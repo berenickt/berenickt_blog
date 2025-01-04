@@ -1,0 +1,114 @@
+/* 글자 색상, 강조 색상 */
+p {
+  white-space: pre-line !important;
+  font-style: normal !important;
+  margin-top: 0.6rem !important;
+}
+
+strong {
+  color: #c586c0;
+}
+
+code {
+  color: #6a9955;
+}
+
+.nx-mt-6 {
+  margin-top: 0.4rem !important;
+}
+
+main > hr {
+  margin: 1rem 0 !important;
+}
+
+blockquote {
+  border-left: 3px solid rgb(10, 116, 202) !important;
+  padding-left: 0.6rem !important;
+  margin: 1rem 0 !important;
+}
+
+blockquote > p {
+  margin: 0 !important;
+}
+
+img {
+  width: auto;
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  box-sizing: content-box;
+}
+
+table {
+  width: auto;
+  margin-top: 1rem !important;
+}
+
+h2 {
+  margin: 0.5rem 0 !important;
+  font-size: 1.8rem !important;
+}
+
+h3 {
+  margin-top: 0.5rem !important;
+  font-size: 1.4rem !important;
+}
+
+h4 {
+  margin-top: 0.5rem !important;
+  font-size: 1.2rem !important;
+}
+
+main > ol > li,
+main > ul > li {
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+main > ul > li ul > li {
+  list-style-type: circle !important;
+  background-color: transparent !important;
+  font-weight: 500 !important;
+}
+
+main > ul > li ul > li ul > li {
+  list-style-type: square !important;
+  font-weight: 500 !important;
+}
+
+main > ol > li ol > li {
+  list-style-type: lower-roman !important;
+}
+
+main > ol > li ol > li ol > li {
+  list-style-type: lower-latin !important;
+}
+
+main > ol > li > *,
+main > ul > li > * {
+  font-weight: 500 !important;
+}
+
+main > ol > li > *:not(ol):not(ul),
+main > ul > li > *:not(ol):not(ul) {
+  font-weight: 500 !important;
+  padding-left: 0.25rem !important;
+}
+
+main > ul {
+  font-weight: 500 !important;
+  list-style-type: disc !important;
+  margin-top: 0 !important;
+}
+
+ul:first-child,
+ol:first-child {
+  font-weight: 500 !important;
+  margin-top: 0 !important;
+}
+
+ul:last-child,
+ol:last-child {
+  font-weight: 500 !important;
+  margin-top: 0 !important;
+}
