@@ -68,18 +68,8 @@ export default {
     type: 'separator',
     title: '(10) 3D & 인터랙티브',
   },
-  threejs: 'Three.js',
-  canvas: 'Canvas',
-  d3js: 'D3.js',
-  chartjs: 'Chart.js',
-  'web-gl': 'WebGL',
   '-- (11) 기타 --': {
     type: 'separator',
     title: '(11) 기타',
   },
-  webpack: 'WebPack',
-  turbopack: 'TurboPack',
-  vite: 'Vite',
-  'web-rtc': 'WebRtc-영상',
-  tensorflow: 'TensorFlow-인공지능',
 }

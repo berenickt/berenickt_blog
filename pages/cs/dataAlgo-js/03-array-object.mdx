@@ -293,7 +293,7 @@ JS는 배열에 map(), filter(), reduce()와 같은 유용한 고차 함수를 �
 
 ```js
 const numbers = [1, 2, 3, 4, 5]
-const squares = numbers.map(num => num * num) // [1, 4, 9, 16, 25]
+const squares = numbers.map((num) => num * num) // [1, 4, 9, 16, 25]
 console.log(numbers) // [1, 2, 3, 4, 5]
 ```
 
@@ -307,7 +307,7 @@ console.log(numbers) // [1, 2, 3, 4, 5]
 
 ```js
 const numbers = [1, 2, 3, 4, 5]
-const evens = numbers.filter(num => num % 2 === 0) // [2, 4]
+const evens = numbers.filter((num) => num % 2 === 0) // [2, 4]
 ```
 
 - filter()는 반환값이 참이면 남기고, 거짓이라면 거른다.
@@ -972,7 +972,7 @@ function solution(N, stages) {
   const result = Object.entries(fails).sort((a, b) => b[1] - a[1])
 
   // (8) 스테이지 번호만 반환
-  return result.map(v => Number(v[0]))
+  return result.map((v) => Number(v[0]))
 }
 ```
 
@@ -1187,7 +1187,7 @@ function solution(dirs) {
 
 ✅ 시간 복잡도 분석
 
-N은 dirs의 길이이다. dirs의 길이만큼 순회하므로 시간 복잡도는 $O(N)$이다.
+N은 dirs의 길이이다. dirs의 길이만큼 순회하므로 시간 복잡도는 O(N)이다.
 
 ---
 

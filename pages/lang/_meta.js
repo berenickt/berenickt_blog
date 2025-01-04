@@ -16,14 +16,4 @@ export default {
     title: '앱',
   },
   dart: 'Dart',
-  '-- 그 외 --': {
-    type: 'separator',
-    title: '그 외',
-  },
-  java: 'Java',
-  python: 'Python',
-  c: 'C언어',
-  cpp: 'C++',
-  go: 'Go',
-  rust: 'Rust',
 }

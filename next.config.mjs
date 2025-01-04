@@ -20,6 +20,7 @@ const withNextra = nextra({
   themeConfig: './theme.config.jsx',
   codeHighlight: false,
   mdxOptions,
+  latex: true,
 })
 
 export default withNextra()

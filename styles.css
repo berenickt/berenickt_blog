@@ -101,6 +101,10 @@ main > ul {
   margin-top: 0 !important;
 }
 
+main > ol {
+  margin-top: 0 !important;
+}
+
 ul:first-child,
 ol:first-child {
   font-weight: 500 !important;
