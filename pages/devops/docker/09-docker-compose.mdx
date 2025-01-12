@@ -1,0 +1,748 @@
+---
+title: '09-Docker compose'
+date: 2025/01/05
+---
+
+## 1. 서비스 작성하기
+
+`docker run 명령어`가 슬슬 길어지면 docker를 버리고 싶어집니다.
+그게 싫으면 명령어들을 한 파일에 입력해놓고 그걸 실행하는 식으로 코드짜놓으셔도 됩니다.
+
+그럴려면 `shell script` 이런거 짜서 실행해도 되긴 하는데, 
+`docker compose`라는 프로그램을 쓰면 훨씬 쉽게 구현가능합니다.
+따로 설치할 필요는 없고, docker desktop 설치할 때 같이 설치됩니다.
+
+------
+
+### 1.1 docker compose 사용하는 법
+
+1. `docker-compose.yml` 파일 하나 만들어서
+2. 거기다가 `docker run 어쩌구 쓰던 명령어들`을 쭉 나열하고,
+3. 이제 터미널에서 `docker compose up`이라고 입력하면, 이 파일에 있던 내용이 쭉 실행됩니다.
+
+편리하죠? 하지만 `docker compose 문법` + `yaml 파일 형식`에 맞게 `.yml` 파일을 채워야합니다.
+
+------
+
+### 1.2 services
+
+`yml` 파일이 뭐냐면 일단 데이터 저장하는 용도의 파일형식입니다.
+`.json` 아는 분들은 그 파일이랑 비슷한 것이라고 생각하면 됩니다.
+.`yml` 파일은 `데이터이름 : 값`이런 식으로 저장합니다.
+어떤 데이터에 속하는 하위 데이터는 인덴트 넣고 `데이터이름 : 값`을 적으면 끝입니다. 
+
+```yaml
+# docker-compose.yml
+services:
+  컨테이너이름:
+    image: 이미지이름
+    ports: 
+      - 내컴퓨터포트:컨테이너포트
+```
+
+그래서 만들어둔 docker파일의 루트경로에서 `docker-compose.yml` 파일 만들어서 이렇게 작성해봅시다. 
+`services:` 라고 적고 인덴트 넣어서 하위 항목으로 **컨테이너 이름**을 하나 작명합시다.
+정확히는 서비스 이름인데 일단은 컨테이너 이름이라고 부릅시다. 
+
+그 다음에 하위 항목으로 `image: 이미지이름`적으면 이 이미지를 컨테이너로 띄워줍니다.
+`ports:` 하위항목으로 포트바인딩 어떻게 할 건지도 정할 수 있습니다.
+
+* VSCode 에디터 쓰는 분들은 이런거 작성할 때 Docker 부가기능 설치하면 편리할 수 있습니다.
+* cf. 예전엔 도커 version 부터 맨 위에 넣고 시작했는데 요즘은 그럴 필요 없습니다.
+
+------
+
+### 1.3 환경변수 넣으려면
+
+```yaml
+# docker-compose.yml
+services:
+  컨테이너이름:
+    image: 이미지이름
+    ports: 
+      - 내컴퓨터포트:컨테이너포트
+    environment:
+      - 환경변수이름=값
+      - 환경변수이름=값
+```
+
+환경 변수는 이런식으로 하나하나 적어두면 됩니다.
+하나하나 적기 귀찮으면 다른 파일에 있는걸 끌어다가 쓸 수 있습니다.
+
+```.env
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=qwer1234
+```
+
+e.g. 우리가 코딩할 때 `.env`파일에 환경변수를 가끔 적어놓기도 합니다.
+이 파일에 있는걸 `docker compose` 설정파일에서 그대로 가져올 수도 있습니다.
+
+```yaml
+# docker-compose.yml
+environment:
+	- POSTGRES_USER: ${POSTGRES_USER} 
+```
+
+그럴려면 `${}` 쓰고 `.env` 파일에 있는 환경변수 이름 적어주면 되겠습니다.
+
+```yaml
+services:
+  # 생략
+
+  db:
+    image: postgres:17-alpine
+    env_file:
+    	- fileName.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+```
+
+`.env` 파일이 여러개 있으면, 그 중에 어디서 가져올건지 명시하는 기능도 있는데 필요할 때 찾아씁시다.
+
+------
+
+### 1.4 띄우는 명령어는
+
+```yaml
+# docker-compose.yml
+services:
+  webserver:
+    image: nodeserver:1
+    ports: 
+      - 8080:8080
+```
+
+그래서 전에 만들어 놓은 웹서버 띄우고 싶어서 이렇게 작성해놨습니다.
+
+```bash
+docker compose up -d # compose를 기반으로 컨테이너 띄움, -d는 백그라운드 실행
+docker compose stop  # compose를 기반으로 컨테이너 정지
+docker compose down  # compose를 기반으로 컨테이너 삭제
+```
+
+`docker compose` 파일을 기반으로 컨테이너를 띄우고 ,정지하고, 삭제하려면 차례로 이런걸 입력합시다.
+
+------
+
+### 1.5 다른 컨테이너 띄우기
+
+웹서버는 잘 뜨는 것 같은데, 
+nginx같은 다른 컨테이너를 하나 더 띄우고 싶으면, `service: 하위 항목`을 더 정의하면 됩니다.
+그니까 띄울 이미지마다 서비스 하나씩 만들면 된다고 생각하면 됩니다.
+
+```yaml
+# docker-compose.yml
+services:
+  webserver: # 컨테이너 이름
+    image: nodeserver:1
+    ports: 
+      - 8080:8080
+
+  nginx: # 컨테이너 이름
+    image: nginx:1
+    ports: 
+      - 80:80
+```
+
+그래서 저장하고 `docker compose down`한 다음에, 
+`docker compose up -d`해보면, 컨테이너 2개가 동시에 잘 뜹니다.
+
+------
+
+### 1.6 네트워크
+
+컨테이너간 통신이 필요해서 네트워크가 필요하다면, 실은 네트워크를 따로 만들고 그럴 필요가 없습니다.
+`services: 하위항목`에 있는 컨테이너들은 자동으로 네트워크 하나 만들어서 거기 전부 넣어주기 때문에 그렇습니다.
+
+```myconfig1.conf
+// myconfig1.conf
+server {
+  listen 80;
+  location / {
+    proxy_pass http://webserver:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+그리고 네트워크 안에 있는 컨테이너끼리 서로 찾으려면,
+`IP주소 혹은 컨테이너 이름 (서비스 이름)`을 기재하면 되니까, 알아서 nginx와 웹서버 연결해보시면 되겠습니다.
+
+```bash
+docker build ./nginx -t nginx:1
+docker build . -t nodeserver:1
+```
+
+------
+
+### 1.7 여러 컨테이너들이 서로 dependency가 있으면?
+
+컨테이너들을 띄우다보면, 어떤 컨테이너는 다른 컨테이너가 떠있어야 제대로 동작하는 경우가 있습니다.
+
+nginx → webserver → DB 
+
+* e.g. nginx는 "웹서버에 보내주세요~", 웹서버는 "DB에 연결해주세요~"
+* 이런 식으로 코드가 짜여져있는게 일반적입니다.
+* 이런 경우에는 DB먼저 띄우고 웹서버 띄우고 그 다음에 nginx 띄우면 좀 안정적이지 않겠습니까.
+* 그리고 그래야 잘 돌아갈 것 같습니다.
+
+```yaml
+# docker-compose.yml
+services:
+  webserver:
+    image: nodeserver:1
+    ports: 
+      - 8080:8080
+
+  nginx:
+    image: nginx:1
+    ports: 
+      - 80:80
+    depends_on:
+      - webserver
+```
+
+`depends_on:` 하위 항목으로 다른 서비스 이름을 기재할 수 있는데, 
+그러면 위의 코드에선 “**nginx는 webserver에 의존한다**”는 뜻입니다.
+그럼 webserver 컨테이너가 먼저 실행된 다음 nginx 컨테이너가 실행됩니다.
+그래서 컨테이너 실행 순서를 결정하고 싶으면 `depends_on:`을 사용해봅시다.
+
+------
+
+### 1.8 서비스
+
+`docker compose`에선 `컨테이너`를 "**서비스**" 안에 작성하는데,
+`서비스`가 뭐냐면 **컨테이너를 어떻게 띄울지 정의하는 일종의 가이드**같은 개념입니다.
+
+```yaml
+# docker-compose.yml
+services:
+  webserver:
+    image: nodeserver:1
+    ports: 
+      - 8080:8080
+```
+
+이미지가 있으면,
+
+* 어떤 포트를 열지
+* 어떤 환경변수를 넣을지
+* 컨테이너 이름은 어떻게 지을지
+
+이런걸 결정해야 이미지를 컨테이너로 실행할 수 있지 않습니까.
+이런 컨테이너 실행 가이드를 docker compose에서 `서비스`라고 부릅니다.
+
+`서비스`라는 개념이 중요한데, 
+왜냐면 여러분이 나중에 컨테이너 수백개를 띄우게 되면, 그걸 관리하기 위한 프로그램을 따로 사용합니다. 
+`Docker swarm`, `Kubernetes`, `AWS ECS` 이런게 있는데, 
+이런걸 써도 항상 서비스와 비슷한 걸 작성한 뒤에 컨테이너들을 띄우게 됩니다. 그래서 잘 기억해둡시다.
+
+서비스를 만들어두면 장점이 뭐냐면,
+
+* 컨테이너 설정을 한 눈에 볼 수 있는 것도 있는데, 나중에 같은 컨테이너 여러개가 필요할 때도 편리해집니다.
+* "서비스에 써있는 내용대로 컨테이너 여러개 복사해서 띄워주세요" 이런게 가능해지니까요.
+
+```yaml
+# docker-compose.yml
+services:
+  webserver:
+    image: nodeserver:1
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+```
+
+심심하니까 진짜로 해보면, 
+
+* 서비스마다 `deploy:` 옵션을 넣으면 같은 컨테이너를 동일한 설정으로 여러개 복제해서 띄울 수 있습니다.
+* 복제해서 실행하려면 `docker compose --compatibility up` 이런 명령어 쓰면 됩니다.
+
+------
+
+## 2. network, volume
+
+간단한거 띄울 때도 쓸데없는 `docker` 명령어들 길게 입력하는 것보다, 
+`docker compose` 파일에 기록해놓고 실행하는게 훨씬 편해서 앞으로 자주 쓰게 될텐데, 
+그래서 `docker compose` 사용예시를 좀만 더 알아보도록 합시다.
+
+------
+
+### 2.1 직접 network 만들기
+
+원래 `services:` 안에 있는 모든 컨테이너들은 자동으로 네트워크 하나 안에 담아줍니다.
+그래서 네트워크 따로 설정하고 그럴 필요는 없는데, 
+간혹 네트워크를 여러개 만들어서 컨테이너를 안전하게 배치하고 싶을 때도 있습니다.
+
+![docker_9-1](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/docker/docker_9-1.png)
+
+e.g. nginx, 웹서버, DB가 있으면, `nginx ←→ 웹서버`는 서로 통신해야하고,
+`웹서버 ←→ DB`는 서로 통신해야하고, 근데 `nginx ←→ DB`는 서로 통신할 일이 아마 없습니다.
+
+그래서 각각 통신이 필요한 컨테이너끼리 하나의 네트워크에 보관하는 것도 안전하고 좋을 수 있습니다.
+
+> cf. 하나의 컨테이너는 여러개 네트워크에 속할 수 있습니다.
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+    ports:
+      - 8080:8080
+    networks:
+      - mynet1
+      - mynet2
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+    networks:
+      - mynet1
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=qwer1234
+    networks:
+      - mynet2
+
+networks:
+  mynet1:
+  mynet2: 
+```
+
+그래서 사진처럼 구현해봤습니다.
+`networks:` 라는 최상위 항목을 하나 만들어서 안에 네트워크 이름을 넣으면 그 이름으로 네트워크를 만들어줍니다.
+
+```bash
+docker compose up
+```
+
+위 예시에선 `mynet1`, `mynet2` 네트워크를 만들었습니다.
+그럼 이제 서비스마다 `networks:` 넣어서 네트워크안에 넣을 수 있습니다.
+
+```bash
+$ docker compose down
+
+$ docker build ./nginx -t nginx:1
+$ docker run -d -p 8080:8080 --network mynet1 --name nodeserver-container nodeserver:1
+
+$ docker compose up -d
+```
+
+------
+
+### 2.2 volume 사용하기
+
+`docker compose` 파일 사용할 때도 볼륨 장착하라고 명령가능합니다.
+
+```yaml
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=qwer1234
+    volumes:
+      - 볼륨이름:/var/lib/postgresql/data
+
+volumes:
+  볼륨이름:
+    external: true
+```
+
+`volume:` 쓰고 그 안에 볼륨장착하는 명령어 입력하면 되겠습니다.
+하지만 그냥 쓰면 `docker compose` 실행시 직접 볼륨을 새로 만들어주기 때문에,
+그게 싫고 기존에 있던 볼륨을 쓸려면 최상단에 `volumes:` 넣고, 기존 볼륨이름과 `external: true`를 넣어줘야합니다.
+
+> 💡 cf. `bind mount` 식으로 볼륨을 쓰려면, 볼륨이름 대신 여러분들 **폴더경로**를 적어주면 되겠습니다.
+>
+> ```yaml
+> services:
+>   db:
+>     image: postgres:17-alpine
+>     environment:
+>       - POSTGRES_USER=admin
+>       - POSTGRES_PASSWORD=qwer1234
+>     # 내가 만든 폴더를 volume으로 쓰려면 bind mount
+>     volumes:
+>     	# ./vol:/var/lib/postgresql/data
+>       - 폴더이름:/var/lib/postgresql/data
+> ```
+>
+> * e.g. `docker compose` 파일과 같은 경로에 `vol` 폴더를 볼륨으로 쓰려면,
+> * 볼륨이름란에 `./vol` 이렇게 적는게 어떨까요.
+
+------
+
+### 2.3 기타 명령어들
+
+가끔가다가 프로그램이 혼자 종료되는 상황들이 있습니다.
+웹서버의 경우엔 유저가 너무 많거나 이상한 코드가 있거나 그러면 프로그램이 종료될 수 있습니다.
+
+그럴 땐 어떻게 하게요? 꺼지면 자동으로 다시 실행하라고 코드를 짜두거나 그럴 수 있습니다.
+
+* `nodejs`같은 경우엔 `pm2`같은 라이브러리 쓰면 다운되거나 그럴 때 그냥 알아서 다시 시작해주고 그렇습니다.
+* `nginx`같은 경우엔 리눅스의 `systemctl` 같은 프로그램 쓰면 더 간단하고 편할 수 있습니다.
+
+하지만 docker를 쓰는 경우 알아서 재시작해주는 간편한 옵션이 있습니다.
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80 
+    restart: always # 다시 재시작
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+```
+
+`restart: always` 이런거 넣어두면 컨테이너가 꺼져도 알아서 재시작됩니다.
+
+* 심지어 docker 엔진 자체가 껐다 켜져도 알아서 서비스가 자동으로 시작됩니다.
+* 그래서 항상 재시작되어야하는 프로그램이 있으면 이거 적어둡시다.
+* cf. `docker compose` 안쓸거면, `docker run -d --restart always` 이런 식으로 옵션을 집어넣습니다.
+
+```bash
+docker compose up -d
+```
+
+엄마가 남의 말 믿지 말랬으니 진짜인지 확인하려면 docker desktop 껐다 켜보셔도 되고, 
+아니면 컨테이너를 오류발생시켜서 끄고 싶으면 nginx같은거에 `docker exec`으로 접속해서 kill 명령한번 줘보면 됩니다.
+
+![docker_9-2](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/docker/docker_9-2.png)
+
+▲ 터미널에 ps 입력하면 현재 실행중인 프로세스들을 볼 수 있는데, 
+잘보면 1번 프로세스로 nginx 명령어가 실행중입니다.
+이걸 강제종료 해버리고 싶으면 터미널에 kill 1 입력하면 됩니다.
+근데 restart always를 적어놨기 때문에 종료되어도 얘가 알아서 재시작되는걸 볼 수 있습니다.
+(재시작 되었는지 모르겠으면 컨테이너의 Inspect 메뉴에서 restart 어쩌구 검색해봅시다.)
+
+> 💡 cf. 여러분들이 docker 명령어나 이런걸로 **컨테이너를 직접 정지시켰을 때는** restart를 뭘로 해놨든 간에 
+> 자동 재시작은 안됩니다.
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+```
+
+`restart: unless-stopped` 이런 명령도 비슷한데, 얘는 **docker 재시작해도 자동으로 시작은 안됩니다.**
+실은 비슷해서 그냥 이거 쓰도록 합시다.
+
+1. `restart`
+   - 컨테이너 꺼져도 자동 재시작
+   - Docker 엔진 껏다켜도 자동 시작
+2. `unless-stopped`
+   - 컨테이너 꺼져도 자동 재시작
+
+------
+
+## 3. 실시간 개발, graceful shutdown
+
+가끔 개발할 때 컨테이너로 띄워보면서 개발해보는 경우들이 있습니다.
+
+* 팀원끼리 개발환경 아예 똑같이 맞출 때
+* 배포전에 테스트하려고
+* 그냥 편해서
+
+이런 이유로 컨테이너로 미리보기 띄워서 개발하는 경우들이 있습니다.
+
+하지만 이러면 귀찮은 점이 있는데, e.g. 서버에서 "안녕"이라는 메세지를 "안녕123" 이런 식으로 바꿨습니다.
+이 변동사항이 컨테이너에서도 잘 돌아가는지 확인하려면 어떻게 하게요?
+
+1. `docker compose down` 하고
+2. 웹서버 이미지 다시 만들고
+3. `docker compose up` 해야합니다.
+
+이러면 귀찮아서 도커 삭제하고 싶어질텐데 당연히 개선 방법이 몇개 있습니다.
+
+------
+
+### 3.1 빌드 자동화
+
+가장 간단한 해결책은 
+docker compose 파일에 "**항상 docker build 하고 나서 컨테이너 띄우세요**" 이렇게 설정하면 됩니다.
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+    build: . # 원하는 Dockerfile 경로
+    ports:
+      - 8080:8080
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+```
+
+`build: 도커파일경로`입력하면 되는데, 그럼 이제 `docker compose up`할 때마다, 
+해당 경로에 있는 도커파일을 가져다가 자동으로 `docker build` 명령을 수행해서 이미지를 생성하고, 
+그 이미지로 컨테이너를 띄워줍니다.
+
+하지만 `docker compose up` 말고, `docker compose up --build` 이런 명령어를 써야 
+자동으로 `docker build` 명령을 수행해줍니다.
+
+그럼 아까와 다르게
+
+1. `docker compose down `
+2. `docker compose up --build`
+
+입력하면 되니까 명령어가 1개 줄어들어서 편리해졌군요.
+
+------
+
+### 3.2 graceful shutdown 기능
+
+컨테이너 끄고 재시작하고 그런게 너무 느린경우들이 있습니다.
+특히 웹서버하나 끄는데 10초넘게 걸린다면 그 이유는 **서버 꺼주는 코드를 안짜서** 그런 것일 뿐입니다.
+
+![docker_9-3](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/docker/docker_9-3.png)
+
+▲ 원래 docker 엔진이 컨테이너를 종료시킬 때 무슨 일이 일어나냐면, 
+"좋은말할 때 알아서 끄라" 이런 식으로 메세지를 컨테이너의 프로그램으로 보냅니다.
+그래서 프로그램은 그 경고성 메세지를 수신하면 알아서 종료하라고 코드짜놓으면 됩니다.
+근데 종료하는 코드가 없거나 그러면 10초 정도 기다렸다가 강제로 꺼집니다. 
+그래서 종료하는 코드를 좀 작성해보도록 합시다.
+
+```js server.js
+const express = require('express')
+const app = express()
+
+const server = app.listen(8080, () => {
+  console.log('서버 실행중 http://localhost:8080')
+})
+
+app.get('/', (req, res) => {
+  res.send('안녕')
+})
+
+process.on('SIGTERM', () => {
+  server.close(() => {
+    console.log('HTTP server closed')
+  })
+})
+
+process.on('SIGINT', () => {
+  server.close(() => {
+    console.log('HTTP server closed')
+  })
+})
+```
+
+그래서 웹서버에 SIGTERM 메세지가 들어오면 `server.close()`하라고 코드짰습니다.
+
+* express의 기본 기능인 `server.close()`를 사용하면 서버에 들어온 요청을 다 처리한 후에 이쁘게 알아서 꺼집니다.
+* `SIGTERM`은 Docker 엔진이 컨테이너 종료할 때 보내는 "**좋은 말할 때 알아서 끄라**" 경고메세지입니다.
+* `SIGINT`는 유저가 터미널에서 `ctrl + c` 누를 때 보내지는 메세지입니다.
+* cf. 터미널에 `kill 1` 입력하는 것도 `SIGTERM` 메세지 보내는 것입니다.
+
+근데 나중에 서버에서 DB도 쓰고 그러면 **서버를 끌 때 DB 연결 해제**하는 것도 좋습니다.
+
+* 이런 식으로 **프로그램 끄기 전에 이거저거 챙기는걸** 멋있는 말로 `graceful shutdown`이라고 합니다.
+* 그래서 컨테이너로 돌릴 프로그램들은 자주 껐다켜지고 그럴 수 있으니까
+* 컨테이너 안의 프로그램들에 `graceful shutdown` 잘해놨나 확인하는 것도 좋은 습관이니까 나중에 한번 챙겨봅시다.
+
+------
+
+### 3.3 watch 기능
+
+아까 "실행하기 전에 자동으로 빌드하세요" 이렇게 해놨는데 이것도 쓰다보면 오래걸려서 귀찮습니다.
+
+* 그럴 땐 시간내서 docker compose의 `watch 기능` 셋팅해두면, 
+* **특정 파일이 변경될 때마다 얘가 바로바로 컨테이너에 복사**를 해주기 때문에,
+* 그래서 이거 쓰면 매번 빌드 그딴거 할 필요가 없어서 매우 편리해집니다. 나름 최신기능임
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+    build: .
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+```
+
+우선 이런 식으로 작성해둡시다. 실시간 반영원하는 컨테이너에 `develop:` 넣고, `watch:` 넣고 시작하면 됩니다.
+
+1. `action: sync`는 **내 컴퓨터에 있던 파일 변경사항을 컨테이너로 복사해주라는 뜻**입니다.
+   - 복붙말고 빌드, 컨테이너 재시작 등 다른 행위도 할 수 있는데 그건 나중에 확인해봅시다.
+2. `path:`에는 **내 컴퓨터의 어떤 파일들 감시할건지** 경로 적으면 됩니다.
+3. `target:`에는 **컨테이너 어디에 변동사항을 복사할건지 경로** 적으면 됩니다.
+4. `ignore:`안에는 **변동사항을 복사할 필요가 없는 파일이나 폴더들 기록**해두면 되는데, 
+   - `.dockerignore` 파일 쓰고 있으면 따로 적을 필요는 없습니다.
+
+그래서 위처럼 적으면 현재 폴더에 있는 파일들이 변동사항이 생겼을 때 app 폴더 안에 그대로 변동사항이 복사됩니다.
+
+> 💡 cf. build: 옵션이 들어있어야 잘됩니다.
+
+------
+
+### 3.4 진짠지 테스트
+
+테스트해보려면 `docker compose down` 했다가 다시 up 하면 될텐데, 
+실은 `docker compose up --watch`라고 명령을 줘야 watch 기능이 동작합니다. 
+이렇게 해두면 이제 코드 변경할 때마다 빌드하고 지랄할 필요가 없어지는군요.
+
+![docker_9-4](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/docker/docker_9-4.png)
+
+▲ 진짜 그런지 코드 수정하고 저장해봤는데, 그러면 `docker desktop` 들어가서 컨테이너 들어가서 파일 검사해보면,
+소스코드가 진짜로 컨테이너에 실시간으로 복사된걸 볼 수 있습니다.
+
+근데 브라우저 열어서 서버에 접속해보면.. 업데이트가 안되고있는데요?
+왜 그러냐면 원래 로컬에서 개발할 때도 코드 수정했으면 **서버를 재시작해줘야** 반영이 됩니다.
+그래서 그럴 뿐이라 서버도 재시작하라고 설정을 바꾸면 됩니다.
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+    build: .
+    develop:
+      watch:
+        - action: sync+restart # 코드 복붙 + 컨테이너 재시작
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+```
+
+* `action: sync+restart` 이런 옵션을 넣으면 “**sync한 후에 컨테이너 재시작하라**”는 뜻입니다.
+* 진짜 재시작까지 잘 되나 테스트해봅시다.
+
+```bash
+docker build . -t nodeserver:1
+docker compose up --watch
+```
+
+보통 nginx같은것도 설정을 바꾸면 한번 재시작해야 적용이 되기 때문에, 
+코드 바꿀 때 마다 재시작이 필요한 컨테이너에 달아놓으면 개발할 때 편리합니다.
+
+------
+
+### 3.5 command로 CMD 덮어쓰기
+
+cf. nodejs로 서버개발하는 경우에는
+
+* nodemon같은 라이브러리를 설치해서 `nodemon server.js`라는 명령어로 서버를 띄우면,
+* 파일변경이 생길 때마다 재시작을 알아서 해줘서 이런거 써도 됩니다.
+
+그래서 명령어를 `node server.js`에서 `nodemon server.js`로 바꾸면 될텐데,
+
+* `Dockerfile`가서 마지막 CMD 명령어를 수정하고 그런게 귀찮으면, 
+* `docker compose`파일에서 CMD 명령어를 덮어쓸 수 있습니다.
+
+```yaml
+services:
+  webserver:
+    build: .
+    ports:
+    - 8080:8080
+
+    command: ["nodemon", "server.js"]
+    develop:
+      # 생략
+```
+
+`command:` 이런걸 서비스마다 넣을 수 있는데, 
+그러면 그 서비스를 띄울 때 dockerfile에 있던 CMD 옆에 있는 명령어를 덮어쓰기할 수 있습니다.
+그래서 `docker compose` 실행시 매번 다른 명령어 넣을 수 있으니까 필요할 때 사용합시다.
+
+------
+
+### 3.6 action: rebuild
+
+```yaml
+services:
+  webserver:
+    image: nodeserver:1
+    build: .
+    develop:
+      watch:
+        - action: sync+restart 
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild # path 파일들 변경시 자동으로 docker build
+          path: package.json
+
+  nginx:
+    image: nginx:1
+    ports:
+      - 80:80
+```
+
+`action: rebuild` 집어넣으면, 
+“**path에 있는 파일이나 폴더가 변동사항이 생기면 그냥 아예 docker build를 다시 해달라**”는 뜻입니다.
+**이미지 다시 만들라**는 뜻임.
+
+그래서 Node.js 개발하는 경우에는 라이브러리같은거 설치하는거 변동사항이 생기면, 
+
+* 이미지를 다시만드는게 깔끔하기 때문에 `package.json`파일 변경되면, 
+  * rebuild하라고 코드짜놓는 경우들이 있습니다.
+* 코드수정하고나서 항상 컴파일이 필요한 프로젝트들도 이걸 sync가 아니라 rebuild로 적는 경우들이 있습니다.
+* `action:`은 여러개 집어넣을 수 있으니 필요하면 사용합시다.
+
+> 💡 결론
+>
+> * 내 코드를 컨테이너로 띄워보면서 실시간 코딩하고 싶으면 `docker compose`의 watch 기능을 꺼내씁시다.
+> * 컨테이너 껐다가 켤 일이 많다면 `graceful shutdown` 잘해놨나 확인합시다.
