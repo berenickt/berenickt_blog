@@ -1,0 +1,544 @@
+---
+title: '50-kubernetes-helm'
+date: 2023/12/25
+---
+
+## 1. Clean Architecture
+
+![](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+cf. https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
+
+- `Clean Architecture`는 애플리케이션의 `비즈니스 로직`과 `외부 시스템`을 분리하는 아키텍처다.
+  - Hexagonal Architecture에서 영감 받은 형태로
+  - Robert Martin이라는 사람이 2017년에 책으로 출간한 개념이다.
+- `Hexagonal Architecture`와 매우 유사하지만 용어와 구분이 약간 다르다
+
+---
+
+### 1.1 Clean Architecture Layers
+
+![](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+- `Framework & Driver Layer`
+  - 외부 디펜던시들이 존재하는 영역이다.
+  - 예를들어 Database, REST API Call, UI, 프레임워크 코드등이 될 수 있다.
+- `Interface Adapters`
+  - Usecase와 Entities를 위해 존재하는 레이어다.
+  - 가장 중요한 로직이 자리잡고 있는 Use Case와 Entities에서 사용하기 가장 편한 형태로 데이터를 변환하고 전달한다.
+- `Use Case`
+  - 애플리케이션에 특화된 비즈니스 로직이 작성되는 위치다.
+  - 시스템의 기능들을 구현하고 추후 소개될 Entities들이 애플리케이션 비즈니스 로직을 소화 할 수 있도록 유도한다.
+- `Entities`
+  - 기업 전반적으로 적용되는 비즈니스 로직이 작성되는 위치다.
+  - 기업에 단 하나의 애플리케이션만 존재한다면 도메인 객체들 정도로 생각해 도 된다.
+
+---
+
+### 1.2 Dependency Rule
+
+![](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+- 원의 내부에 있는 레이어는 바깥의 변경에 영향을 받으면 안된다.
+- 외부 레이어는 내부 레이어에 의존 할 수 있다. 하지만 내부 레이어는 외부 레이어에 의존하면 안된다.
+- 의존성의 역전을 위해 Dependency Inversion을 사용한다
+
+---
+
+### 1.3 Use Case
+
+![](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+- Hexagonal Architecture와 가장 다른점(?) 이라고 볼 수 있다.
+- Clean Architecture는 SRP (Single Responsibility Principle)을 강조한다.
+  - 비즈니스 로직 레이어에서 실행해야할 기능 하나 하나를 하 나의 클래스에 정의한다.
+
+---
+
+## 2. Hexagonal Architecture
+
+### 2.1 Hexagonal Architecture란?
+
+- `Hexagonal Architecture`는 Domain을 중앙에 감싸는 아키텍처중 가장 먼저 고안된 아키텍처 중 하나이다.
+- `Port and Adapter 패턴`으로도 불리며,
+  - 개인적으론 이 명칭이 조금 더 아키텍처의 특성을 잘 표현한다고 생각한다.
+- 더이상 `Layered Architecture`처럼 Top Down 형태가 아니다.
+- 도메인을 중심으로 설계되고 외부 의존성들을 Domain의 설계에 맞춰서 프로그래밍 하게 된다.
+- 도메인이 중심에 있고 바깥이 내부로 의존하는 구조를 갖게 된다.
+  - 가장 중심에는 도메인이 있기 때문에, 도메인은 그 무엇에도 의존하지 않는 독립적인 존재가 된다.
+  - 즉, 중심 비즈니스 로직은 외부에 영향을 받지 않게 된다
+
+---
+
+### 2.2 Domain이란?
+
+- `Domain`이란 **소프트웨어에서 해결하고자하는 특정 비즈니스 영역**을 얘기한다.
+- `Domain`은 실제 비즈니스나 시스템의 문제, 프로세스, 규칙 등을 포함하며 이를 소프트웨어에 반영한다.
+
+소프트웨어에서 해결해야하는 `핵심 관심사`다.
+
+- `핵심 관심사`이기 때문에 큰 틀에서 자주 바뀌지 않는다.
+- 전자 상거래 시스템에는 **주문, 결제, 재고관리, 고객**이 도메인이 될 수 있다.
+- (마치 우리가 생성한 마이크로서비스처럼)
+- 의료 시스템에는 **환자 기록, 예약, 치료 과정** 등이 도메인이 될 수 있다.
+
+도메인은 “실제” 비즈니스에서 해결해야하는 관심사이기 때문에 개발자가 아닌 사람들과 용어 소통이 용이하다.
+
+- 일반 사람들도 이해 할 수 있는 용어인 “주문”, “결제”, “재고”등이 용어가 되기 때문에 비개발자도 이해하기 쉽다.
+- 이걸 `Ubiquitous Language (공통 언어)`라고 부른다
+
+---
+
+### 2.3 Domain 객체란?
+
+- Domain 객체는 Domain을 추상적으로 표현한 클래스다.
+- 우리가 지금까지 제작해온 Entity들이 Domain 객체와 매우 “비슷”하다.
+- Domain 객체는 프로젝트에서 가장 중심되는 코드이다.
+  - 예를 들어, 쇼핑몰 시스템의 결제 PG사가 A사에서 B로 변경된다고 하더라도,
+  - 도메인 객체에 “결제”라는 개념이 존재해야한다는 건 변하지 않는다.
+- 도메인은 비즈니스 로직의 중요한 부분을 담당하지만, 외부 의존성 없이 가장 필요한 부분만 단순하게 구현한다.
+  - 네이티브 언어로 구현 가능한 로직과 검증을 주로 구현한다.
+
+---
+
+### 2.4 Domain 객체 예제
+
+```js
+export class Order {
+  private readonly id : string;
+  private products: Product[];
+  private shippingAddress: Address;
+  private totalPrice: number;
+  private status: OrderStatus;
+
+  constructor(id: string, products: Product[], shippingAddress: Address) {
+    if (!id) throw new Error('Order ID는 필수입니다.');
+    if (products.length === 0) throw new Error('주문은 사품 하나 이상 있어야 합니다.');
+    if (!shippingAddress) throw new Error('배송지 정보는 필수입니다.');
+
+    this.id = id;
+    this.products = products;
+    this.shippingAddress = shippingAddress;
+    this.totalPrice = this.calculateTotalPrice();
+    this.status = OrderStatus.PENDING;
+  }
+
+  // 여기부터 Business Logic
+  addProduct(product: Product): void {
+    this.products.push(product);
+    this.totalPrice = this.calculateTotalPrice();
+  }
+  removeProduct(productId: string): void {}
+  changeShippingAddress(newAddress: Address): void {}
+  completeOrder(): void {}
+  cancelOrder(): void {}
+  calculateTotalPrice() : number {}
+}
+```
+
+---
+
+### 2.5 Domain Business Logic
+
+```js
+export class Order {
+  // 생략
+  addProduct(product: Product): void {
+    this.products.push(product)
+    this.totalPrice = this.calculateTotalPrice()
+  }
+
+  removeProduct(productId: string): void {
+    this.products = this.products.filter((product) => product.id !== productId)
+    // 검증
+    if (this.products.length === 0) {
+      throw new Error('주문은 최소 하나의 상품이 있어야 합니다.')
+    }
+    this.totalPrice = this.calculateTotalPrice()
+  }
+
+  changeShippingAddress(newAddress: Address): void {
+    this.shippingAddress = newAddress
+  }
+
+  completeOrder(): void {
+    if (this.status !== OrderStatus.PENDING) {
+      throw new Error('주문을 완료할 수 없습니다. Pending 상태가 아닙니다.')
+    }
+    this.status = OrderStatus.COMPLETED
+  }
+
+  cancelOrder(): void {
+    if (this.status !== OrderStatus.PENDING) {
+      throw new Error('주문을 취소할 수 없습니다. Pending 상태가 아닙니다.')
+    }
+    this.status = OrderStatus.CANCELED
+  }
+
+  private calculateTotalPrice(): number {
+    return this.products.reduce((total, product) => total + product.price, 0)
+  }
+}
+```
+
+- 도메인의 가장 중요한 논리들을 담고있는다.
+- 가장 중요하지만 단순한 로직으로 행사한다.
+- 외부 의존성이 없어야한다.
+  - 외부에 의존하게 되면 외부 의존성이 변경됐을때, 도메인이 함께 변경돼야 한다.
+  - 도메인은 절대로 외부에 의해 변경 되면 안된다.
+- 비즈니스 로직의 큰 변경사항이 있다면 이 변경사항은 도메인으로부터 파생돼야한다.
+  - 다른 외부 요소 가 도메인을 변경시키면 안된다.
+
+![fastcam-architecture_51-1](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-1.png)
+
+![fastcam-architecture_51-2](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-2.png)
+
+![fastcam-architecture_51-3](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-3.png)
+
+![fastcam-architecture_51-4](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-4.png)
+
+- Port는 Adapter가 연동 할 수 있는 스펙의 명시이기 때문에 항상 interface 형태로 구현한다.
+  - (OOP의 interface를 꼭 써야한다는 이야기는 아님)
+  - 애플리케이션이 어떻게 작동할지 일반화된 스펙 (contract)를 port에 명시해둔다.
+  - Application 내부에서는 이 스펙에 따라 기능을 구현한다. 이 구현된 기능을 Adapter가 사용한다.
+  - Port에 대한 스펙은 바뀌지 않기 때문에 Application 내부는 외부 로직에 영향을 받지 않는다.
+  - 새로운 Adapter를 사용해야 한다면,
+    - Port의 스펙에 맞게 Adapter만 구현해주면, Application 로직은 전혀 건드릴 필요가 없다.
+- Application에서 작업한 로직이 Driven 사이드로 어떻게 전달될지 스펙을 port에 명시해둔다.
+  - Application 내부에서는 이 스펙을 사용하고 외부에서 Port에 대한 기능을 구현한다
+
+---
+
+### 2.6 Dependency Inversion
+
+- 어떻게하면 도메인을 그 무엇에도 의존하지 않도록 만들 수 있을까?
+- 단순한 질문이지만 처음 “아키텍처”의 개념을 접한다면 어려울 수 있다.
+- Layered Architecture는 Top Down 방식이기 때문에 인프라가 변동되면 어쩔 수 없이 비즈니스 로직이 변경된다.
+  - 우리가 제작한 프로그램에서 ORM을 TypeORM에서 Mongoose로 변경한다고 생각해보자.
+  - 모든 Service 로직을 다시 작성해야 될 것이다.
+- 비즈니스 로직의 위치가 의존성의 끝이 아닌데 어떻게 어디에도 의존하지 않게 만들 수 있을까?
+  - 답은 Dependency Inversion에 있다
+
+---
+
+### 2.7 Repository Pattern
+
+잠깐 다른 이야기를 해보자. 이미 우리가 익숙한 코드이기 때문에 이해하는데 도움된다
+
+- TypeORM은 우리가 연결하는 데이터베이스와 관계 없이 모두 같은 API 인터페이스를 제공한다.
+- 우리가 Layered Architecture에서 정의한 개념들을 생각해보면, 데이터베이스가 바뀌면 위 레이어의 로직에 변화를 주게된다.
+  - 그런데 TypeORM은 데이터베 이스를 통째로 바꿔도 비즈니스 로직을 전혀 수정할 필요가 없다.
+- 어떻게 가능한 흑마법인가?
+
+> 💡의존성 흐름
+>
+> Controller → Service → Repository(e.g. Postgres, MySQL, mongoDB)
+
+---
+
+### 2.8 Repository Pattern
+
+![fastcam-architecture_51-5](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-5.png)
+
+- 흑마법은 interface로 가능하다.
+- TypeORM에서 TypeORM과 연동할 수 있는 룰을 interface 로 정의한다.
+- 이 정의들이 바로 find, findOne, update, delete 같은 함수들이다.
+- TypeORM을 지원할 데이터베이스들 은 이 룰에 맞춰서 각 시스템의 쿼리를 완성하면 된다.
+- TypeORM이 각 데이터베이스에 의존해야했던 상황에서 데이터베이스들이 TypeORM 에 정의된 룰 에 의존하는 상황이 된다.
+- 이게 바로 Dependency Inversion 이다
+
+---
+
+### 2.9 Dependency Inversion
+
+![fastcam-architecture_51-6](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-6.png)
+
+---
+
+## 3. Layered Architecture
+
+`Layered Architecture`는 소프트웨어를 여러개의 레이어로 나누는 설계다.
+
+- 각 레이어별로 특화된 영역을 담당한다.
+- 모든 레이어는 바로 아래의 레이어에만 의존한다.
+- 레이어를 어떻게 몇개로 나눌지에 대한 정답은 존재하지 않는다.
+  - (하지만 어느정도 틀은 존재한다..!)
+
+![fastcam-architecture_51-7](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-7.png)
+
+(1) `Presentation Layer`는 직역적으로 해석 했을때 **UI를 의미**한다.
+
+- 하지만 아키텍처는 어떤 문맥이든 적용 할 수 있어야 하기 때문에 그냥 최전방이라고 생각하면 된다.
+- 즉, NestJS의 문맥에서는 `Controller`가 된다.
+
+```js
+@Controller('orders')
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+
+  @Post()
+  async createOrder(@Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.createOrder(createOrderDto);
+  }
+
+  @Get(':id')
+  async getOrder(@Param('id') id: string) {
+    return this.orderService.getOrder(id);
+  }
+}
+```
+
+---
+
+(2) `Business Layer`는 **실제 비즈니스 로직을 담당하는 영역**이다.
+
+- “비즈니스 로직”은 말 그대로 “비즈니스”의 “로직”
+- 즉, 현실 세계의 존재하는 문제들을 해결하는 로직이라고 생각 할 수 있다.
+- NestJS에서는 `Service`가 해당된다.
+
+```js
+@InJectable()
+export class OrderService {
+  constructor(
+    private readonly orderRepository: OrderRepository,
+    private readonly productRepository: ProductRepository,
+  ) {}
+
+  async createOrder(createOrderDto: CreateOrderDto) {
+    const productPrices = await this.productRepository.getProductPrices();
+
+    const order = new Order(createOrderDto.customrId, createOrderDto.items);
+    const total = order.calculateTotal(productPrices);
+
+    await this.orderRepository.save(order);
+
+    return { message: 'Order created successfully', orderId: order.id, total };
+  }
+
+  async getOrder(orderId: string) {
+    return this.orderRepository.findById(orderId);
+  }
+}
+```
+
+---
+
+(3) `Persistence Layer`는 직역하면 **영속성 레이어**라고 부를 수 있다.
+
+- “영속성”이기 때문에 데이터베이스를 의미하는걸로 생각 할 수 있지만,
+- 이 상황에서는 `Database와 연동하는 레이어`다.
+- 만약에 Database Layer가 따로 없었다면 두 포지션을 모두 맡을 수 도 있다.
+
+```js
+@InJectable()
+export class OrderRepository {
+  constructor(
+    @InjectRepository(OrderEntitiy)
+    private readonly repository: Repository<OrderEntity>
+  ) {}
+
+  async save(order: Order): Promise<void> {
+    const orderEntity = this.repository.create({
+      id: order.id,
+      customerId: order.customerId,
+      items: JSON.stringify(order.items),
+      createdAt: order.createdAt,
+    })
+    await this.repository.save(orderEntity)
+  }
+
+  async findById(orderId: string): Promise<Order | null> {
+    const orderEntity = await this.repository.findOneBy({id: orderId})
+    if (!orderEntity) return null
+
+    return new Order(
+      orderEntity.customerId,
+      JSON.parse(orderEntity.items),
+    )
+  }
+}
+```
+
+---
+
+(4) `DatabaseLayer`는 말 그대로 **데이터베이스의 영역**이다.
+
+- e.g. Postgres, MongoDB, MySQL
+
+---
+
+### 3.1 Layered Architecture의 문제
+
+- 모든 아키텍처의 공통 관심사는 “의존성”이다. 어떤 방향으로 의존성이 전파되고 있는지가 매우 중요하다.
+- `Layered Architecture`는 위에서 아래로 의존하는 구조이다.
+  - Top Down 방식이 사람에게 가장 자연스러운 구현이기 때문에,
+  - 현대 소프트웨어에서 `Layered Architecture`를 자연스럽게 많이 사용하게 된다.
+- `Layered Architecture`는 결국 모든 레이어가 가장 아래에 의존하게 되기 때문에,
+  - 소프트웨어 설계를 할때 자연스럽게 데이터베이스 설계부터 생각하게 된다.
+  - 우리가 일반적으로 소프트웨어를 처음 만들때를 생각해보자.
+  - 가장 먼저 생각하는건 “테이블 어떻게 만들지?”다.
+- 여기서 의문이 생기게 된다. 소프트웨어가 풀어내려는 가장 중요한 문제가 `Business Logic`
+  - 즉, `Business Layer`에 있는 문제들인데 이 부분이 과연 외부적인 요인에 영향을 받게되는게 맞는것인가?
+- 이게 잘못됐다 생각해서 만들어낸 아키텍처가 `Clean Architecture`와 `Hexagonal Architecture`다.
+  - 절대로 정답은 없다.
+  - Layered Architecture는 누구나 직관적으로 이해 할 수 있고 자연스럽게 코드를 작성 할 수 있다.
+  - 하지만 Clean Architecture 와 Hexagonal Architecture는 사고 방식부터 바꿔야한다.
+  - 결국 인력 트레이닝 비용도 늘어나고 단기적으론 개발 시간도 늘어난다.
+  - 절대적인 강자는 존재하지 않는다.
+  - 우리가 MSA를 배우며 깨우쳤던 점들을 되돌아보자
+
+---
+
+## 4. Domain Driven Design(DDD) & Polyrepo MSA
+
+### 4.1 Monorepo vs Polyrepo
+
+- Monorepository MSA는 현재 우리가 하고 있는것처럼 하나의 레포지토리로 여러개의 Microservice를 개발하는 방식이다.
+- Polyrepository MSA는 각각 Microservice를 원하는 기술스택을 사용해서 자유롭게 개발하는 방식이다.
+  - 그 어떤 제약도 존재하지 않고 우리가 지금까지 배워온 통신 방법들로 프로젝트끼리 통신한다.
+- 회사에 인원이 많아질수록 Polyrepository 방식으로 개발 할 수 밖에 없다.
+  - 대부분의 큰 기업들이 이렇게 개발하고 있다.
+  - 팀이 가장 잘 다루로 각각 Microservice에 가장 적합한 기술을 사용해서 개발을 진행 할 수 있다.
+- 모든 팀이 전부 자유롭게 개발을 진행하다보면 Microservice를 기획하기위한 일종의 약속과 시스템이 필요하다.
+- 다양한 방법이 존재하지만 Domain Driven Design이 매우 유용하게 사용된다
+
+---
+
+### 4.2 Domain Driven Design!?
+
+- 복잡한 비즈니스의 요구사항을 “도메인”에 집중해서 설계하는 소프트웨어 개발 “접근법”이다.
+- 비즈니스 요구사항을 충족하면서 “유지보수” 가능하게 시스템을 설계하는 방법론이다.
+- `Ubiquitous Language`를 매우 강조한다.
+  - 개발자만 이해 할 수 있는 영역을 최소화 하고,
+  - “도메인 전문가”와 함께 소프트웨어를 설계 할 수 있도록 디자인 되었다.
+- 큰 그림을 설계하는 `Strategic Design`과 `Tactical Design`으로 나뉜다.
+- `Strategic Design`은 “코드를 작성하는법” 보다 도메인을 설계하고,
+  - 개발자가 아닌 사람들이 설계에 참가 할 수 있는 룰을 정의하고 있다.
+- `Tactical Design`은 DDD 기법에 의해 코드를 작성하는 방법론을 다루고 있다.
+- `Strategic Design`으로 큰 그림을 그리고 `Tactical Design`으로 세부 코드를 작성하면 된다.
+- `Clean Architecture`, `Hexagonal Architecture`의 “도메인”을 잘 디자인 하기 위해 탄생한게 아니다.
+  - 굳이 따지자면 `Domain  Driven Design`이 훨씬 먼저 공개되었다.
+- `Clean Architecture`, `Hexagonal Architecture`, `Microservice Architecture`처럼
+  - “도메인”을 중시하는 아케틱처가 인기를 끌며 `DDD`가 더욱 각광을 받게 됐다.
+- 만병통치약이 아니니 마음대로 먹지는 말자
+
+---
+
+### 4.3 Strategic Design
+
+- 소프트웨어 설계를 가장 높은 위치에서 큰 그림을 기획하는데 사용된다.
+- `Ubiquitous Language`를 정립하는 가장 중요한 스테이지다.
+- 도메인을 `코어 도메인`과 `서브 도메인`으로 나눈다.
+  - `코어 도메인`은 한 도메인의 가장 중요한 문제를 해결하는 도메인이다.
+  - `서브 도메인`은 코어도메인 만큼 중요한 도메인은 아니지만 필수적인 도메인이다.
+- 이외에 `제너릭 도메인` 등 다른 분류도 존재한다.
+
+![fastcam-architecture_51-8](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-8.png)
+
+![fastcam-architecture_51-9](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-9.png)
+
+---
+
+### 4.4 Tactical Design
+
+- `Tactical Design`은 Strategic Design 보다 더욱 Low Level 관점에서 설계를 바라본다.
+  - 코드를 어떻게 작성하면 효율적일지 알려준다.
+- `Entity → Mutable`한 데이터다.
+  - 꼭 ID 프로퍼티를 갖고 있으며 ID가 변경되면 다른 Entity로 간주되지만,
+  - 다른 프로퍼티가 변경됐을 때는 같은 Entity로 인식한다.
+- `Value Object(VO) → ID`가 존재하지 않다. 값을 기준으로 같은지 다른지 판단한다.
+  - 예를들어 이메일은 값 자체가 정체성을 부기 때문에 ID가 따로 필요없으며,
+  - A객체의 `test@codefactory.ai`와 B 객체의 `test@codefactory.ai`는 같은 값으로 인식한다.
+  - Mutable인 Entity와 다르게 Immutable이다.
+- Aggregate → Entity와 Value Object들을 소유하는 객체다. Aggregate 내부에 있는
+- Repositories → 우리가 알고있는 Repository와 동일하다. 데이터 영속을 위해 사용되는 개념이다.
+- Services → 여러개의 Aggregate가 함께 작동해야하는 코드를 작성할때 사용된다.
+
+---
+
+### 4.4 Entities & Value Objects
+
+![fastcam-architecture_51-10](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-10.png)
+
+---
+
+### 4.5 Aggregate & Transactional Boundary
+
+![fastcam-architecture_51-11](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-11.png)
+
+Transactional Boundary → Transactional Boundary에 속하는 객체는
+하나의 Transaction으로 변화가 일어난다.
+
+---
+
+### 4.6 Repositories & Services
+
+![fastcam-architecture_51-12](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-12.png)
+
+---
+
+## 5. 도메인이란?
+
+### 5.1 Microservice를 어떻게 나눠야하는가?
+
+- Microservice를 도대체 어떤 단위로 나누면 되는걸까?
+- Microservice의 목적은 서비스간의 의존성을 줄이고 효율적으로 독립적 개발을 진행하기 위함이다.
+- 그러기 위해서는 가장 작은 논리적 단위로 서비스를 분해 할 수 있으면 가장 효율적인 MSA를 운영 할 수 있다.
+- 이 가장 작은 논리적 단위를 우리는 흔히 “도메인”이라 부른다.
+- 도메인을 중심으로 개발을 하게되는 “Domain Driven Design” (DDD는 좀 나중에 배우도록 하자)이나,
+  - Clean Architecture 등에 의하면 도메인은 비즈니스의 중심 기능이 되는 비즈니스 로직, 해결하려는 중심되는 문제 등으로 표현된다.
+- 보통 이런 개념은 영어의 직역이기 때문에 정의가 복잡하게 느껴지지만 사실 크게 어렵지 않다.
+  - 다음 슬라이드에서 예제를 봐보도록 해보자
+
+---
+
+### 5.2 온라인 쇼핑몰 예제
+
+![fastcam-architecture_51-13](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-13.png)
+
+- 각 도메인은 코어 비즈니스 기능을 담당한다.
+- 개발자가 아닌 일반 사람이 한 도메인의 명칭을 봤을때 무슨 역할을 하는지 알 수 있게 분리 해야한다.
+  - (Domain Expert:DDD)
+- 처음부터 완벽히 도메인을 나눌 필요가 없다. 개발해가면서 독립 가능하다고 생각하는 부분들을 분리하면 된다.
+  - (Shipping 도메인에 일반 택배, 항공 택배를 같이 구현하다가 서로 관련성이 멀어지고
+  - 너무 커지면 나중에 나눠도 된다.)
+- 도메인을 다룰때는 그 도메인 하나의 관점에서 작업을 한다.
+  - 예를 들어, Order에서 Customer 고객이 존재하고 Payment에 Payer가 존재할 수 있다.
+  - 둘은 같은 사용자를 지칭하지만 서로 다른 도메인이기 때문에 이는 중복이 아니다.
+
+---
+
+## 6. CQRS Pattern
+
+### 6.1 CQRS Pattern이란?
+
+![fastcam-architecture_51-14](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-14.png)
+
+- `CQRS Pattern`은 `Command Query Responsibility Segregation`이다.
+- 세상의 API는 CRUD로 나뉜다 (X) → 세상의 API는 “명령”과 “조회”로 나뉜다. (O)
+
+---
+
+### 6.2 CQRS… 굳이 왜?
+
+- `Command`와 `Query`가 독립적이기 때문에 독립적으로 확장 할 수 있다.
+  - 예를 들어, 쇼핑몰 앱을 만든다면 조회 요청이 압도적으로 많다.
+  - 조회 기능만 독립적으로 확장하고 명령 요청 (주문등)은 확장하지 않을 수 있다.
+- 성능 최적화를 위해 각각 최적화된 데이터베이스를 사용 할 수 있다.
+  - 특히, 조회 기능은 데이터를 denormalize 한 상태로 저장해두고,
+  - 조회 요청이 있을때 따로 join등의 복잡한 쿼리 없이 즉각적인 응답을 할 수 있다.
+- Command와 Query에 독립적인 보안을 설정해서 개발 할 수 있다.
+  - Query는 상대적으로 보안을 약하게 설정하고 Command는 세세하게 보안 설정을 할 수 있다.
+- Microservice를 운영했을때의 장점과 단점이 거의 상속된다.
+
+---
+
+### 6.3 CQRS
+
+![fastcam-architecture_51-15](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-15.png)
+
+---
+
+### 6.4 Event Driven Architecture
+
+![fastcam-architecture_51-16](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-16.png)

@@ -176,7 +176,7 @@ import { Repository } from 'typeorm'
 export class AppController {
   constructor(
     @InjectRepository(UserModel)
-    private readonly userRepository: Repository<UserModel>,
+    private readonly userRepository: Repository<UserModel>
   ) {}
 
   @Post('users')
@@ -571,7 +571,7 @@ export class Photo {
 
   // 첫번째 파라미터 : 타입을 반환하는 함수
   // 두번째 파라미터 : 첫번째 파라미터에 입력한 클래스의 칼럼중 하나를 입력
-  @ManyToOne(() => User, user => user.photos)
+  @ManyToOne(() => User, (user) => user.photos)
   user: User
 }
 ```
@@ -585,7 +585,7 @@ export class User {
   @Column()
   name: string
 
-  @OneToMany(() => Photo, photo => photo.user)
+  @OneToMany(() => Photo, (photo) => photo.user)
   photos: Photo[]
 }
 ```
@@ -632,7 +632,7 @@ export class Profile {
   @Column()
   photos: string
 
-  @OneToOne(() => User, user => user.profile)
+  @OneToOne(() => User, (user) => user.profile)
   user: User
 }
 ```
@@ -709,7 +709,7 @@ export class ProfileModel {
   id: number
 
   // UserModel에 user의 profile 컬럼과 1:1 연결
-  @OneToOne(() => UserModel, user => user.profile)
+  @OneToOne(() => UserModel, (user) => user.profile)
   // 상대방 테이블의 id를 가지고 있기(만약 상대방이 갖고있으면 상대방이 이 테이블 id를 가짐)
   @JoinColumn()
   user: UserModel
@@ -770,7 +770,7 @@ export class AppController {
     @InjectRepository(UserModel)
     private readonly userRepository: Repository<UserModel>,
     @InjectRepository(ProfileModel)
-    private readonly profileRepository: Repository<ProfileModel>,
+    private readonly profileRepository: Repository<ProfileModel>
   ) {}
 
   @Post('users')
@@ -829,7 +829,7 @@ export class PostModel {
   id: number
 
   // 1:M 관계이니 posts로 복수형으로 선언
-  @ManyToOne(() => UserModel, user => user.posts)
+  @ManyToOne(() => UserModel, (user) => user.posts)
   author: UserModel
 
   @Column()
@@ -883,7 +883,7 @@ export class AppController {
     @InjectRepository(ProfileModel)
     private readonly profileRepository: Repository<ProfileModel>,
     @InjectRepository(PostModel)
-    private readonly postRepository: Repository<PostModel>,
+    private readonly postRepository: Repository<PostModel>
   ) {}
 
   // 생략
@@ -932,7 +932,7 @@ export class TagModel {
   id: number
 
   // M:M 연결이기 때문에 둘 다 복수로 선언
-  @ManyToMany(() => PostModel, post => post.tags)
+  @ManyToMany(() => PostModel, (post) => post.tags)
   posts: PostModel[]
 
   @Column()
@@ -953,11 +953,11 @@ export class PostModel {
   id: number
 
   // 1:M 관계이니 posts로 복수형으로 선언
-  @ManyToOne(() => UserModel, user => user.posts)
+  @ManyToOne(() => UserModel, (user) => user.posts)
   author: UserModel
 
   // M:M 연결이기 때문에 둘 다 복수로 선언
-  @ManyToMany(() => TagModel, tag => tag.posts)
+  @ManyToMany(() => TagModel, (tag) => tag.posts)
   // M:M 연결에서 JoinTable은 둘 중 하나 아무군데 선언해주면 된다
   @JoinTable()
   tags: TagModel[]
@@ -1009,7 +1009,7 @@ export class AppController {
     @InjectRepository(PostModel)
     private readonly postRepository: Repository<PostModel>,
     @InjectRepository(TagModel)
-    private readonly tagRepository: Repository<TagModel>,
+    private readonly tagRepository: Repository<TagModel>
   ) {}
 
   // 생략
@@ -1280,7 +1280,7 @@ await repository.upsert(
     { externalId: 'abc123', firstName: 'Timber' },
     { externalId: 'bca321', firstName: 'Saw' },
   ],
-  ['externalId'],
+  ['externalId']
 )
 /** executes
  * INSERT INTO user
@@ -1897,12 +1897,12 @@ const users = await userRepository
 const movie = await dataSource
   .createQueryBuilder()
   .select('movie')
-  .from(Movie, 'movie')
-  .leftJoinAndSelect('movie.detail', 'detail') // movie.detail 테이블을 조인
+  .from(Movie, 'movie') // from(테이블명, '별칭')
+  .leftJoinAndSelect('movie.detail', 'detail') // leftJoinAndSelect(테이블명.컬럼명, '별칭')
   .leftJoinAndSelect('movie.director', 'director')
   .leftJoinAndSelect('movie.genres', 'genres')
-  .where('movie.id = :id', { id: 1 })
-  .getOne() // 결과값을 하나만 가져오기
+  .where('movie.id = :id', { id: 1 }) // where(조건, { 변수명: 값 }) - ":id"는 변수를 의미
+  .getOne() // 결과값을 하나만 가져오기, 여러 개는 getMany()를 사용
 ```
 
 ---
@@ -1913,9 +1913,16 @@ const movie = await dataSource
 await dataSource
   .createQueryBuilder()
   .insert()
-  .into(Movie)
-  .values([{ title: 'New Movie', genre: 'Action', director: director, genres: genres }])
-  .execute()
+  .into(Movie) // data를 넣을 테이블
+  .values([
+    {
+      title: 'New Movie', //
+      genre: 'Action',
+      director: director,
+      genres: genres,
+    },
+  ])
+  .execute() // 실행
 ```
 
 ---
@@ -1951,8 +1958,8 @@ await dataSource
 ```tsx
 const genres = await dataSource
   .createQueryBuilder()
-  .relation(Movie, 'genres')
-  .of(1) // id가 1인 값을 가져오기
+  .relation(Movie, 'genres') // Movie 테이블의 genres 컬럼을 기반으로
+  .of(1) // Movie id가 1인 값을 가져오기
   .loadMany() // 결과값을 가져오기
 ```
 
@@ -1963,8 +1970,8 @@ const genres = await dataSource
 ```tsx
 // 단일 Row만 가져올 때
 const uesrs = await connection
-  .getRepository(User)
-  .createQueryBuilder('user')
+  .getRepository(User) // User 테이블을 기반으로 Repository 생성
+  .createQueryBuilder('user') // createQueryBuilder('별칭')
   .select(['user.id', 'user.firstName', 'user.lastName'])
   .getOne()
 
@@ -2031,27 +2038,27 @@ const users = await connection
 // Inner Join
 const users = await connection
   .getRepository(User)
-  .createQueryBuilder('user')
-  .innerJoinAndSelect('user.profile', 'profile') // user.profile 테이블을 조인
+  .createQueryBuilder('user') // createQueryBuilder('별칭')
+  .innerJoinAndSelect('user.profile', 'profile') // innerJoinAndSelect(테이블명.컬럼명, '별칭')
   .getMany()
 
 // Left Join
 const users = await connection
   .getRepository(User)
   .createQueryBuilder('user')
-  .leftJoinAndSelect('user.photos', 'photos') // user.photos 테이블을 조인
+  .leftJoinAndSelect('user.photos', 'photos') // leftJoinAndSelect(테이블명.컬럼명, '별칭')
   .getMany()
 ```
 
 ---
 
-### 17.11 Aggregation
+### 17.11 Aggregation(집계)
 
 ```tsx
 const userCount = await connection
   .getRepository(User)
   .creawteQueryBuilder('user')
-  .select('COUNT(user.id)', 'count')
+  .select('COUNT(user.id)', 'count') // select('집계함수(테이블명.컬럼명)', '별칭')
   .getRawOne()
 ```
 
@@ -2063,14 +2070,14 @@ const userCount = await connection
 const users = await connection
   .getRepository(User)
   .createQueryBuilder('user')
-  .where(qb => {
+  .where((qb) => {
     const subQuery = qb
       .subQuery()
       .select('subUser.id')
       .from(User, 'subUser')
       .where('subUser.isActive = :isActive', { isActive: true })
       .getQuery()
-    return 'user.id IN ' + subQuery
+    return 'user.id IN ' + subQuery // user.id가 subQuery에 포함되는 값만 가져오기
   })
   .setParameters('isActive', true)
   .getMany()
