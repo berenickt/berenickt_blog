@@ -8,7 +8,7 @@ export default {
   css: 'CSS',
   js: 'JavaScript',
   'js-dom': 'JS-DOM',
-  'js-functional': 'JS-functional',
+  // TODO(글 작성 후 주석 해제): 'js-functional': 'JS-functional',
   'js-codingtest-logic': 'JS 코테 12가지 로직',
   ts: 'TypeScript',
   '-- 앱 --': {

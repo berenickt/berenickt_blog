@@ -9,18 +9,20 @@ const chConfig = {
   },
 }
 
-const mdxOptions = {
-  remarkPlugins: [[remarkCodeHike, chConfig]],
-  recmaPlugins: [[recmaCodeHike, chConfig]],
-  // jsx: true,
-}
-
 const withNextra = nextra({
-  theme: 'nextra-theme-docs',
-  themeConfig: './theme.config.jsx',
+  // content/ 디렉터리의 MDX를 루트 경로(/)에 매핑
+  contentDirBasePath: '/',
+  // 코드 하이라이팅은 Code Hike가 담당
   codeHighlight: false,
-  mdxOptions,
   latex: true,
+  search: { codeblocks: false },
+  mdxOptions: {
+    remarkPlugins: [[remarkCodeHike, chConfig]],
+    recmaPlugins: [[recmaCodeHike, chConfig]],
+  },
 })
 
-export default withNextra()
+/** @type {import('next').NextConfig} */
+const nextConfig = {}
+
+export default withNextra(nextConfig)

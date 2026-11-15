@@ -1,26 +1,35 @@
 {
-  "name": "with-nextra",
+  "name": "berenickt-blog",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start",
-    "postinstall": "patch-package"
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "start": "next start"
   },
   "dependencies": {
-    "codehike": "^1.0.0",
-    "lucide-react": "^0.469.0",
-    "next": "^14.2.3",
-    "nextra": "3.0.0-alpha.31",
-    "nextra-theme-docs": "3.0.0-alpha.31",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "codehike": "^1.1.0",
+    "lucide-react": "^1.73.0",
+    "next": "^16.4.6",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@types/node": "20.12.7",
-    "autoprefixer": "^10.4.19",
-    "patch-package": "^8.0.0",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
-    "typescript": "5.4.5"
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "pagefind": "^1.6.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "zod": "4.3.6"
+    }
   }
 }

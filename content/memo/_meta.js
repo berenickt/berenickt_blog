@@ -5,7 +5,7 @@ export default {
     title: '취미',
   },
   music: '음악',
-  photo: '사진',
+  // TODO(글 작성 후 주석 해제): photo: '사진',
   reading: '독서',
   health: '건강',
   '-- 영어 --': {

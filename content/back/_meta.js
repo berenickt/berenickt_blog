@@ -13,7 +13,7 @@ export default {
     type: 'separator',
     title: '(2) Java 백엔드',
   },
-  spring: 'Spring',
+  // TODO(글 작성 후 주석 해제): spring: 'Spring',
   '-- (3) 기능 이론 --': {
     type: 'separator',
     title: '(3) 기능 이론',
@@ -33,7 +33,7 @@ export default {
   mysql: 'MySQL',
   postgresql: 'PostgreSQL',
   redis: 'Redis',
-  mongodb: 'MongoDB',
+  // TODO(글 작성 후 주석 해제): mongodb: 'MongoDB',
   '-- (5) 다른 API --': {
     type: 'separator',
     title: '(5) 다른 API',

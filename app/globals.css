@@ -1,3 +1,8 @@
+@import 'tailwindcss';
+
+/* Nextra 4 다크모드(class 기반)와 Tailwind dark: variant 연동 */
+@variant dark (&:where(.dark *));
+
 /* 글자 색상, 강조 색상 */
 p {
   white-space: pre-line !important;
@@ -11,10 +16,6 @@ strong {
 
 code {
   color: #6a9955;
-}
-
-.nx-mt-6 {
-  margin-top: 0.4rem !important;
 }
 
 main > hr {

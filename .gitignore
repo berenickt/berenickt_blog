@@ -1,2 +1,5 @@
 .next
 node_modules
+# pagefind 검색 인덱스 (postbuild 시 생성)
+public/_pagefind
+*.tsbuildinfo
