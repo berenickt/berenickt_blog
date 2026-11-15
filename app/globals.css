@@ -3,117 +3,235 @@
 /* Nextra 4 다크모드(class 기반)와 Tailwind dark: variant 연동 */
 @variant dark (&:where(.dark *));
 
-/* 글자 색상, 강조 색상 */
-p {
-  white-space: pre-line !important;
-  font-style: normal !important;
-  margin-top: 0.6rem !important;
+/*
+ * Nextra 테마 스타일은 @layer 안에 있으므로,
+ * 여기(레이어 밖)에 작성한 규칙이 !important 없이도 우선 적용된다.
+ */
+
+/* ───────────── 폰트 ───────────── */
+:root {
+  --x-font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --x-font-mono: var(--font-jetbrains-mono), 'D2Coding', ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
-strong {
-  color: #c586c0;
+body {
+  font-family: var(--x-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
+  overflow-wrap: anywhere;
 }
 
-code {
-  color: #6a9955;
+/* ───────────── 본문 ───────────── */
+main {
+  font-size: 1rem;
+  line-height: 1.8;
+  letter-spacing: -0.005em;
+}
+
+/* 글에서 한 줄 개행을 그대로 보여주기 위함 */
+main p {
+  white-space: pre-line;
+  margin-top: 0.75rem;
+}
+
+/* ───────────── 제목 ───────────── */
+main :is(h1, h2, h3, h4) {
+  letter-spacing: -0.02em;
+  scroll-margin-top: 5rem;
+}
+
+main > h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.3;
+  margin-top: 3.5rem;
+}
+
+main > h1:first-of-type {
+  margin-top: 0.5rem;
+}
+
+main > h2 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin-top: 2.75rem;
+  padding-bottom: 0.4rem;
+}
+
+main > h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 2rem;
+}
+
+main > h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+}
+
+/* 제목 바로 뒤 제목은 간격을 줄임 (예: "2. JSX 문법" → "2.1 감싸인 요소") */
+main > :is(h1, h2, h3) + :is(h2, h3, h4) {
+  margin-top: 1rem;
 }
 
 main > hr {
-  margin: 1rem 0 !important;
+  margin: 2.5rem 0;
 }
 
-blockquote {
-  border-left: 3px solid rgb(10, 116, 202) !important;
-  padding-left: 0.6rem !important;
-  margin: 1rem 0 !important;
+/* ───────────── 강조 ───────────── */
+main strong {
+  font-weight: 700;
+  color: var(--x-color-primary-700);
 }
 
-blockquote > p {
-  margin: 0 !important;
+.dark main strong {
+  color: var(--x-color-primary-400);
 }
 
-img {
+/* 인라인 코드 (코드블록 제외) */
+main :not(pre) > code {
+  padding: 0.12em 0.4em;
+  border-radius: 0.375rem;
+  font-size: 0.875em;
+  color: var(--x-color-primary-700);
+  background: color-mix(in oklab, var(--x-color-primary-500) 10%, transparent);
+  border: 1px solid color-mix(in oklab, var(--x-color-primary-500) 18%, transparent);
+}
+
+.dark main :not(pre) > code {
+  color: var(--x-color-primary-300);
+}
+
+/* ───────────── 인용문 ───────────── */
+main blockquote {
+  margin: 1.25rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--x-color-primary-500);
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: color-mix(in oklab, var(--x-color-primary-500) 6%, transparent);
+  font-style: normal;
+}
+
+main blockquote > p:first-child {
+  margin-top: 0;
+}
+
+main blockquote blockquote {
+  margin: 0.75rem 0 0;
+  border-left-width: 3px;
+}
+
+/* ───────────── 목록 ───────────── */
+main > ul {
+  list-style-type: disc;
+}
+
+main > ul ul {
+  list-style-type: circle;
+}
+
+main > ul ul ul {
+  list-style-type: square;
+}
+
+main > ol ol {
+  list-style-type: lower-roman;
+}
+
+main > ol ol ol {
+  list-style-type: lower-latin;
+}
+
+main :is(ul, ol) > li {
+  margin-top: 0.25rem;
+}
+
+main :is(ul, ol) > li::marker {
+  color: var(--x-color-primary-500);
+}
+
+main > :is(ul, ol) {
+  margin-top: 0.75rem;
+}
+
+/* ───────────── 이미지 ───────────── */
+main img {
+  display: block;
   width: auto;
   max-width: 100%;
-  display: block;
-  margin: 0 auto;
-  box-sizing: content-box;
+  margin: 1.25rem auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow: 0 4px 24px -8px rgb(0 0 0 / 0.15);
 }
 
-table {
+.dark main img {
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+/* ───────────── 표 ───────────── */
+main table {
   width: auto;
-  margin-top: 1rem !important;
+  margin-top: 1.25rem;
+  font-size: 0.925rem;
 }
 
-h2 {
-  margin: 0.5rem 0 !important;
-  font-size: 1.8rem !important;
+/* ───────────── 헤더(네비게이션 바) ───────────── */
+/*
+ * nav 자식 구조: [로고(홈)] [메뉴] [검색] [GitHub] [햄버거]
+ * 로고는 왼쪽 끝, 검색·GitHub은 오른쪽 끝에 두고 메뉴만 화면 정중앙에 배치한다.
+ * 화면이 좁으면 메뉴가 검색창과 겹치므로 xl(1280px) 이상에서만 적용한다.
+ */
+@media (min-width: 1280px) {
+  .nextra-navbar nav {
+    position: relative;
+  }
+
+  .nextra-navbar nav > a:first-child + div {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
-h3 {
-  margin-top: 0.5rem !important;
-  font-size: 1.4rem !important;
+/* ───────────── 사이드바 / 목차 ───────────── */
+.nextra-sidebar {
+  font-size: 0.9rem;
 }
 
-h4 {
-  margin-top: 0.5rem !important;
-  font-size: 1.2rem !important;
+/* ───────────── 홈 화면 히어로 ───────────── */
+.home-hero {
+  margin: 1.5rem 0 2rem;
+  padding: 2.25rem 2rem;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 120% at 0% 0%, color-mix(in oklab, var(--x-color-primary-500) 22%, transparent), transparent 60%),
+    radial-gradient(100% 100% at 100% 100%, color-mix(in oklab, #ec4899 14%, transparent), transparent 60%);
+  border: 1px solid color-mix(in oklab, var(--x-color-primary-500) 20%, transparent);
 }
 
-main > ol > li,
-main > ul > li {
-  font-weight: 500;
-  margin-bottom: 0;
+.home-hero h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
 }
 
-main > ul > li ul > li {
-  list-style-type: circle !important;
-  background-color: transparent !important;
-  font-weight: 500 !important;
+.home-hero h1 span {
+  background: linear-gradient(90deg, var(--x-color-primary-600), #db2777);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-main > ul > li ul > li ul > li {
-  list-style-type: square !important;
-  font-weight: 500 !important;
+.home-hero p {
+  margin-top: 0.75rem;
+  font-size: 1.05rem;
+  opacity: 0.8;
 }
 
-main > ol > li ol > li {
-  list-style-type: lower-roman !important;
-}
-
-main > ol > li ol > li ol > li {
-  list-style-type: lower-latin !important;
-}
-
-main > ol > li > *,
-main > ul > li > * {
-  font-weight: 500 !important;
-}
-
-main > ol > li > *:not(ol):not(ul),
-main > ul > li > *:not(ol):not(ul) {
-  font-weight: 500 !important;
-  padding-left: 0.25rem !important;
-}
-
-main > ul {
-  font-weight: 500 !important;
-  list-style-type: disc !important;
-  margin-top: 0 !important;
-}
-
-main > ol {
-  margin-top: 0 !important;
-}
-
-ul:first-child,
-ol:first-child {
-  font-weight: 500 !important;
-  margin-top: 0 !important;
-}
-
-ul:last-child,
-ol:last-child {
-  font-weight: 500 !important;
-  margin-top: 0 !important;
-}

@@ -8,7 +8,7 @@ export function CopyButton({ text }: { text: string }) {
 
   return (
     <button
-      className='hover:bg-gray-400/20 p-1 text-zinc-200'
+      className='rounded-md p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-100'
       aria-label='Copy to clipboard'
       onClick={() => {
         navigator.clipboard.writeText(text)
