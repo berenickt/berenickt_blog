@@ -1,70 +1,12 @@
 ---
-title: About
-date: 2026/11/15
+title: Home
 ---
 
-import { Cards } from 'nextra/components'
-import { Monitor, Server, Container, Smartphone, Cpu, Code2, NotebookPen } from 'lucide-react'
+import { HomeGrid } from '../components/home-grid'
 
-{/* JSX 안의 여러 줄 텍스트는 MDX가 <p>로 감싸므로 한 줄로 작성 */}
 <div className='home-hero'>
-  <h1>가치를 창출하는 <span>친절한 이웃</span>, 베르닉트</h1>
-  <p>사용자 중심의 개발을 지향하는 낙천주의자입니다. 공부하며 정리한 개발 지식과, 개발하면서 겪은 문제와 생각을 기록합니다.</p>
+  <h1><span>berenickt</span>.log</h1>
+  <p>공부하며 정리한 개발 지식과, 개발하면서 겪은 문제와 생각을 기록합니다. <a href='/about'>소개 보기 →</a></p>
 </div>
 
-## 이 블로그에서는
-
-<Cards num={2}>
-  <Cards.Card icon={<Monitor />} title='Front — React, Next.js, 상태 관리, 스타일링, 테스트' href='/front' />
-  <Cards.Card icon={<Server />} title='Back — Node.js, NestJS, DB, GraphQL, MSA' href='/back' />
-  <Cards.Card icon={<Container />} title='DevOps — AWS, Git, Docker, Kubernetes, Jenkins' href='/devops' />
-  <Cards.Card icon={<Smartphone />} title='Mobile — React Native, Flutter' href='/mobile' />
-  <Cards.Card icon={<Cpu />} title='CS — 자료구조·알고리즘, 네트워크, 운영체제, 디자인 패턴' href='/cs' />
-  <Cards.Card icon={<Code2 />} title='Lang — HTML, CSS, JavaScript, TypeScript, Dart' href='/lang' />
-  <Cards.Card icon={<NotebookPen />} title='Memo — 에러 해결 기록, 치트시트, 공부법' href='/memo' />
-</Cards>
-
----
-
-## 제가 중요하게 여기는 것
-
-#### 🕸️ 친절한 이웃
-
-제가 가장 좋아하는 캐릭터는 스파이더맨과 조커입니다. 둘 다 온갖 역경을 겪지만,
-스파이더맨에게는 자신을 믿어주는 사람들이 있고 조커에게는 없다는 점이 결정적으로 다릅니다.
-단 한 사람의 믿음이 인생을 바꿀 수 있다고 생각하기에, 주변 사람들에게 따뜻한 말 한마디 건네는 것을 지향합니다.
-
-#### 🔵 점을 찍는 삶
-
-> You can't connect the dots looking forward; you can only connect them looking backward.
->
-> \- 스티브 잡스
-
-지금 하는 일이 맞는지 불안할 때도, 그저 꾸준히 점을 찍다 보면 언젠가 선으로 이어진다고 믿습니다.
-세상에 실패한 인생은 없고, 성취와 과정만 있을 뿐입니다.
-
-#### 🌱 성장과 베풂
-
-군 복무 시절 독서로 성장하고, 봉사활동으로 누군가를 도우며 느낀 행복은 몇 년이 지난 지금도 생생합니다.
-그때부터 제 삶의 목표는 스스로 성장하고, 그만큼 베풀며 사는 것이 되었습니다.
-
-#### ✨ 단순함
-
-> Simplicity is the Ultimate Sophistication.
->
-> \- 레오나르도 다빈치
-
-생각이 많은 편이라, 복잡함 속에서 중요한 것을 놓치지 않도록 단순하게 생각하려 노력합니다.
-
-더 긴 이야기는 [나의 생각과 가치관](/memo/my-values)에 적어 두었습니다.
-
----
-
-## 연락
-
-역사, 철학, 과학, 미술, 음악, 건축 등 여러 분야의 이야기를 좋아합니다. 편하게 연락 주세요 🤭
-
-- GitHub: [berenickt](https://github.com/berenickt)
-- Email: berenickt99@gmail.com
-
-> 글마다 출처를 남기려고 노력하지만, 빠진 부분이 있다면 알려주세요.
+<HomeGrid />

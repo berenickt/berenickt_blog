@@ -1,10 +1,10 @@
 export default {
-  front: {
-    title: 'Front',
+  frontend: {
+    title: 'Frontend',
     type: 'page',
   },
-  back: {
-    title: 'Back',
+  backend: {
+    title: 'Backend',
     type: 'page',
   },
   devops: {
@@ -19,16 +19,34 @@ export default {
     title: 'CS',
     type: 'page',
   },
-  lang: {
-    title: 'Lang',
+  languages: {
+    title: 'Languages',
     type: 'page',
   },
   memo: {
     title: 'Memo',
     type: 'page',
   },
+  posts: {
+    title: '전체 글',
+    type: 'page',
+    display: 'hidden', // 헤더 메뉴에서는 숨기고 사이드바 링크로 들어간다
+    theme: {
+      sidebar: false,
+      toc: false,
+      pagination: false,
+    },
+  },
+  about: {
+    title: '소개',
+    type: 'page',
+    display: 'hidden',
+    theme: {
+      typesetting: 'article',
+    },
+  },
   index: {
-    title: 'About',
+    title: 'Home',
     display: 'hidden',
     type: 'page',
     theme: {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { JetBrains_Mono } from 'next/font/google'
 import { Footer, Layout, Navbar } from 'nextra-theme-docs'
-import { Banner, Head, Search } from 'nextra/components'
+import { Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import 'nextra-theme-docs/style.css'
@@ -28,17 +28,9 @@ export const metadata: Metadata = {
   },
 }
 
-const banner = (
-  <Banner storageKey='berenickt-release'>🎉 berenickt 블로그에 온 걸 환영합니다. 🎉</Banner>
-)
-
 const logo = (
-  <span className='flex items-center gap-2'>
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src='/favicon.svg' alt='' width={26} height={26} className='rounded-md' />
-    <span className='text-lg font-extrabold tracking-tight'>
-      berenickt<span className='text-[var(--x-color-primary-600)]'>.log</span>
-    </span>
+  <span className='text-lg font-extrabold tracking-tight'>
+    berenickt<span className='text-[var(--x-color-primary-600)]'>.log</span>
   </span>
 )
 
@@ -73,7 +65,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       />
       <body>
         <Layout
-          banner={banner}
           navbar={navbar}
           footer={footer}
           pageMap={await getPageMap()}

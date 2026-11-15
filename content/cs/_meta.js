@@ -1,4 +1,6 @@
 export default {
+  // 모든 분야 사이드바 맨 위에 고정 노출
+  'all-posts-link': { title: '📚 전체 글', href: '/posts' },
   index: '컴퓨터과학 로드맵',
   'terms-principles': {
     title: '용어 & 원리',
@@ -7,11 +9,11 @@ export default {
     type: 'separator',
     title: '(1) 자료구조 & 알고리즘',
   },
-  'dataAlgo-js': '자료구조&알고리즘-js',
-  // TODO(글 작성 후 주석 해제): 'dataAlgo-py': '자료구조&알고리즘-py',
-  backjoon: '백준-codeplus',
+  'algorithm-js': '자료구조&알고리즘-js',
+  // TODO(글 작성 후 주석 해제): 'algorithm-py': '자료구조&알고리즘-py',
+  baekjoon: '백준-codeplus',
   // TODO(글 작성 후 주석 해제): programmers: '프로그래머스',
-  // TODO(글 작성 후 주석 해제): 'dataAlgo-previous': '기출문제',
+  // TODO(글 작성 후 주석 해제): 'algorithm-previous': '기출문제',
   '-- (2) 디자인패턴 --': {
     type: 'separator',
     title: '(2) 디자인패턴',
@@ -61,5 +63,5 @@ export default {
     type: 'separator',
     title: '(10) 기타 책들',
   },
-  'book-clean-code': '클린코드',
+  'clean-code': '클린코드',
 }

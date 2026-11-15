@@ -88,8 +88,13 @@ main strong {
   color: var(--x-color-primary-700);
 }
 
+/*
+ * 다크모드: Nextra의 primary-300/400은 다크 밝기(70%)에 +21~32%가 더해져 거의 흰색(91~100%)이 되어
+ * 본문 글자와 구분되지 않는다. 다크모드에서만 채도 있는 밝은 색을 직접 지정한다.
+ * (어두운 배경 대비 약 9:1, 본문 흰색과는 색상으로 구분)
+ */
 .dark main strong {
-  color: var(--x-color-primary-400);
+  color: hsl(250 100% 82%);
 }
 
 /* 인라인 코드 (코드블록 제외) */
@@ -103,7 +108,9 @@ main :not(pre) > code {
 }
 
 .dark main :not(pre) > code {
-  color: var(--x-color-primary-300);
+  color: hsl(275 100% 86%);
+  background: hsl(260 60% 55% / 0.22);
+  border-color: hsl(260 70% 70% / 0.35);
 }
 
 /* ───────────── 인용문 ───────────── */
@@ -184,18 +191,92 @@ main table {
 /*
  * nav 자식 구조: [로고(홈)] [메뉴] [검색] [GitHub] [햄버거]
  * 로고는 왼쪽 끝, 검색·GitHub은 오른쪽 끝에 두고 메뉴만 화면 정중앙에 배치한다.
- * 화면이 좁으면 메뉴가 검색창과 겹치므로 xl(1280px) 이상에서만 적용한다.
+ * 메뉴가 보이는 md(768px) 이상에서는 항상 정중앙에 둔다. (768px 미만은 Nextra 기본 햄버거 메뉴)
+ * --nav-side: 양쪽 영역(왼쪽 로고, 오른쪽 검색 아이콘 + GitHub) 중 넓은 쪽 너비.
+ * 메뉴는 양쪽에서 이만큼 비워 겹치지 않게 하고, 공간이 모자라면 메뉴 자체가 가로 스크롤된다.
  */
-@media (min-width: 1280px) {
+@media (min-width: 768px) {
   .nextra-navbar nav {
     position: relative;
+    --nav-side: 8rem;
   }
 
   .nextra-navbar nav > a:first-child + div {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    max-width: calc(100% - 2 * (var(--nav-side) + 1.5rem));
   }
+}
+
+/*
+ * 헤더 검색창 → 검색 아이콘 버튼
+ * 평소에는 돋보기 아이콘만 보이고, 클릭(포커스)하면 왼쪽으로 펼쳐지는 입력창이 된다.
+ * 펼쳐진 입력창은 absolute라 레이아웃(가운데 메뉴)을 밀지 않고 위에 겹친다.
+ * 모바일 사이드바의 검색창은 그대로 두기 위해 .nextra-navbar 안으로 한정한다.
+ */
+.nextra-navbar .nextra-search {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.nextra-navbar .nextra-search::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: translateY(-50%);
+  background-color: currentColor;
+  opacity: 0.7;
+  pointer-events: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.nextra-navbar .nextra-search:hover::before {
+  opacity: 1;
+}
+
+.nextra-navbar .nextra-search input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  cursor: pointer;
+  color: transparent;
+  background-color: transparent;
+}
+
+.nextra-navbar .nextra-search input:hover {
+  background-color: rgb(0 0 0 / 0.05);
+}
+
+.dark .nextra-navbar .nextra-search input:hover {
+  background-color: rgb(255 255 255 / 0.1);
+}
+
+.nextra-navbar .nextra-search input::placeholder {
+  color: transparent;
+}
+
+/* 펼쳐진 상태: 포커스 중이거나 검색어가 남아 있을 때 */
+.nextra-navbar .nextra-search input:focus,
+.nextra-navbar .nextra-search input:not(:placeholder-shown) {
+  width: 16rem;
+  padding: 0 2.25rem 0 0.75rem;
+  cursor: text;
+  color: inherit;
+  background-color: var(--x-color-nextra-bg, #fff);
+}
+
+/* 단축키 안내(⌘K) 숨김 — 단축키 자체는 그대로 동작 */
+.nextra-navbar .nextra-search kbd {
+  display: none;
 }
 
 /* ───────────── 사이드바 / 목차 ───────────── */
@@ -235,3 +316,157 @@ main table {
   opacity: 0.8;
 }
 
+/* ───────────── 전체 글 목록 (/posts) ───────────── */
+.all-posts-toolbar {
+  position: sticky;
+  top: calc(var(--nextra-navbar-height) + 0.5rem);
+  z-index: 10;
+  margin: 1.5rem 0;
+}
+
+.all-posts-toolbar input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.6rem;
+  border: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+  background: var(--x-color-nextra-bg);
+  font-size: 0.95rem;
+}
+
+.all-posts-section {
+  margin-top: 2rem;
+}
+
+.all-posts-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.all-posts-count {
+  margin-left: 0.35rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: color-mix(in oklab, var(--x-color-primary-500) 14%, transparent);
+  color: var(--x-color-primary-600);
+}
+
+.all-posts-tree {
+  margin: 0.25rem 0 0.25rem 0.25rem;
+  padding-left: 1rem;
+  border-left: 1px solid color-mix(in oklab, currentColor 10%, transparent);
+  list-style: none;
+}
+
+.all-posts-section > .all-posts-tree {
+  padding-left: 0;
+  border-left: 0;
+  margin-left: 0;
+  columns: 2 22rem;
+  column-gap: 2.5rem;
+}
+
+.all-posts-section > .all-posts-tree > li {
+  break-inside: avoid;
+}
+
+.all-posts-tree li {
+  margin: 0.2rem 0;
+  font-size: 0.925rem;
+}
+
+.all-posts-tree a {
+  opacity: 0.85;
+}
+
+.all-posts-tree a:hover {
+  opacity: 1;
+  color: var(--x-color-primary-600);
+}
+
+.all-posts-tree summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.all-posts-separator {
+  margin-top: 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.55;
+}
+
+.all-posts-empty {
+  margin-top: 2rem;
+  opacity: 0.6;
+}
+
+/* ───────────── 홈 화면 그리드 ───────────── */
+.home-section {
+  margin-top: 2.5rem;
+}
+
+.home-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    background-color 0.15s;
+}
+
+.home-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--x-color-primary-500) 60%, transparent);
+  background-color: color-mix(in oklab, var(--x-color-primary-500) 6%, transparent);
+}
+
+.home-card strong {
+  font-size: 0.975rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.home-card-group {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.55;
+}
+
+.home-card-count {
+  margin-top: auto;
+  font-size: 0.75rem;
+  color: var(--x-color-primary-600);
+}
+
+.home-hero a {
+  color: var(--x-color-primary-600);
+  font-weight: 600;
+  white-space: nowrap;
+}

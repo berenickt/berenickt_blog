@@ -22,5 +22,5 @@ export default {
   '08-testing': 'Testing',
   '09-authentication': 'Authentication',
   '10-deploying': 'Deploying',
-  '11-API-Ref': 'API-Ref',
+  '11-api-reference': 'API-Ref',
 }

@@ -1,4 +1,6 @@
 export default {
+  // 모든 분야 사이드바 맨 위에 고정 노출
+  'all-posts-link': { title: '📚 전체 글', href: '/posts' },
   index: 'Front 로드맵',
   'front-architecture': '프론트엔드 역사와 미래',
   'eslint-prettier': 'ESLint & Prettier',
@@ -57,7 +59,7 @@ export default {
   'front-test': '프론트엔드 테스트',
   jest: 'Jest',
   cypress: 'Cypress',
-  'react-test-lib': 'React Test Lib(RTL)',
+  'react-testing-library': 'React Test Lib(RTL)',
   storybook: 'Storybook',
   '-- (9) 배포 --': {
     type: 'separator',

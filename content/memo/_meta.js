@@ -1,4 +1,6 @@
 export default {
+  // 모든 분야 사이드바 맨 위에 고정 노출
+  'all-posts-link': { title: '📚 전체 글', href: '/posts' },
   index: '각종 링크 모음',
   error: 'Error',
   blog: 'Blog',

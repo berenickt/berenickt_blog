@@ -23,6 +23,25 @@ const withNextra = nextra({
 })
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  // content/ 폴더명 변경 전 URL → 새 URL (검색엔진·외부 링크 유지)
+  async redirects() {
+    return [
+      ['/cs/backjoon', '/cs/baekjoon'],
+      ['/cs/dataAlgo-js', '/cs/algorithm-js'],
+      ['/cs/book-clean-code', '/cs/clean-code'],
+      ['/mobile/reactNative', '/mobile/react-native'],
+      ['/front/react-test-lib', '/frontend/react-testing-library'],
+      ['/front/nextjs/11-API-Ref', '/frontend/nextjs/11-api-reference'],
+      // 최상위 폴더명 변경 (구체적인 경로보다 뒤에 두어야 한 번에 이동)
+      ['/front', '/frontend'],
+      ['/back', '/backend'],
+      ['/lang', '/languages'],
+    ].flatMap(([from, to]) => [
+      { source: from, destination: to, permanent: true },
+      { source: `${from}/:path*`, destination: `${to}/:path*`, permanent: true },
+    ])
+  },
+}
 
 export default withNextra(nextConfig)
