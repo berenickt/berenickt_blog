@@ -36,6 +36,9 @@ function walk(dir, out = []) {
 function toUrlPath(root, file) {
   let rel = relative(root, file).split(sep).join('/')
   rel = rel.replace(/(\.html|\.body|\.rsc|\.meta|\.json)+$/i, '')
+  // Vercel route-cache: APP_PAGE/<해시>/$/frontend/react → frontend/react
+  const marker = rel.lastIndexOf('/$')
+  if (marker !== -1) rel = rel.slice(marker + 2).replace(/^\//, '')
   if (rel === 'index' || rel === '') return 'index.html'
   return `${rel}.html`
 }
