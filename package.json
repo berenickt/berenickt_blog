@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/last-updated.mjs",
     "dev": "next dev --webpack",
+    "prebuild": "node scripts/last-updated.mjs",
     "build": "next build --webpack",
     "postbuild": "node scripts/pagefind.mjs",
     "start": "next start"

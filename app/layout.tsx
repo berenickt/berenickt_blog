@@ -74,6 +74,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           toc={{ backToTop: '맨 위로', title: '목차' }}
           editLink={null}
           feedback={{ content: null }}
+          copyPageButton={false}
         >
           {children}
         </Layout>

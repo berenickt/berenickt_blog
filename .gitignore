@@ -3,3 +3,6 @@ node_modules
 # pagefind 검색 인덱스 (postbuild 시 생성)
 public/_pagefind
 *.tsbuildinfo
+
+# 글별 마지막 수정일 (predev/prebuild 시 생성)
+.generated
