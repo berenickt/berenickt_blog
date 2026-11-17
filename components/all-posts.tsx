@@ -14,7 +14,7 @@ type Item = {
 
 export function toNodes(items: Item[]): PostNode[] {
   return items
-    .filter(item => item.display !== 'hidden' && item.name !== 'posts' && item.name !== 'about' && item.name !== 'all-posts-link')
+    .filter(item => item.display !== 'hidden' && item.name !== 'posts' && item.name !== 'about' && item.name !== 'all-posts-link' && item.name !== 'tags-link' && item.name !== 'tags')
     .map(item => {
       const title = typeof item.title === 'string' ? item.title : item.name
       if (item.type === 'separator') return { kind: 'separator', title }

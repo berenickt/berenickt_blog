@@ -1,6 +1,7 @@
 export default {
   // 모든 분야 사이드바 맨 위에 고정 노출
   'all-posts-link': { title: '📚 전체 글', href: '/posts' },
+  'tags-link': { title: '🏷️ 태그', href: '/tags' },
   index: '언어별 특징',
   '-- 웹 --': {
     type: 'separator',

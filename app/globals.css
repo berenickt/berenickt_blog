@@ -507,3 +507,101 @@ main table {
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* ───────────── 태그 (/tags, 글 상단) ───────────── */
+.page-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-basis: 100%;
+  margin-top: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.tag-chip:hover {
+  border-color: var(--x-color-primary-500);
+}
+
+.tag-chip[aria-pressed='true'] {
+  border-color: var(--x-color-primary-500);
+  background: color-mix(in oklab, var(--x-color-primary-500) 14%, transparent);
+  color: var(--x-color-primary-600);
+  font-weight: 600;
+}
+
+.tag-mini {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: color-mix(in oklab, var(--x-color-primary-500) 10%, transparent);
+  color: var(--x-color-primary-600);
+  cursor: pointer;
+}
+
+.tag-mini:hover {
+  background: color-mix(in oklab, var(--x-color-primary-500) 20%, transparent);
+}
+
+.tags-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.tags-posts {
+  list-style: none;
+  padding: 0;
+  margin-top: 0.75rem;
+}
+
+.tags-posts li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 6%, transparent);
+}
+
+.tags-post-title {
+  font-weight: 600;
+}
+
+.tags-post-title:hover {
+  color: var(--x-color-primary-600);
+}
+
+.tags-post-section {
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.tags-post-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}

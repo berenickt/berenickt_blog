@@ -6,7 +6,8 @@
 // 모든 글이 같은 날짜로 표시된다. 그래서 IGNORED_COMMITS 는 건너뛰고,
 // 이름 변경(rename)을 따라가며 실제로 내용을 수정한 커밋 날짜를 찾는다.
 //
-// 앞으로 내용과 무관한 일괄 수정 커밋을 만들면 여기에 해시를 추가하면 된다.
+// 앞으로 내용과 무관한 일괄 수정 커밋은 커밋 메시지 제목에 [no-date] 를 넣거나
+// 여기에 해시를 추가하면 된다.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -16,6 +17,7 @@ const IGNORED_COMMITS = [
   'c3b12f6', // UPDATE: 블로그 디자인 개선 및 memo 정리
   'fea91bb', // UPDATE: 홈 그리드·전체 글 페이지, 폴더명 정리, 헤더 개선
 ]
+const IGNORE_MARK = '[no-date]'
 const CONTENT = 'content'
 const OUTPUT = '.generated/last-updated.json'
 
@@ -46,21 +48,23 @@ function compute() {
     }
 
     const ignored = IGNORED_COMMITS.map((h) => git('rev-parse', h).trim())
-    const isIgnored = (hash) => ignored.includes(hash)
+    const isIgnored = (hash, subject) => ignored.includes(hash) || subject.includes(IGNORE_MARK)
 
     // 최신 → 과거 순으로 훑으며 이름 변경을 거꾸로 추적한다.
     const log = git(
       '-c', 'diff.renameLimit=100000',
-      'log', '-M', '--name-status', '--format=@@%H %cI', '--', CONTENT, 'pages',
+      'log', '-M', '--name-status', '--format=@@%H %cI %s', '--', CONTENT, 'pages',
     )
     const tracking = new Map(files.map((f) => [f, f])) // 과거 시점의 경로 → 현재 파일
-    const fallback = {} // 무시된 커밋밖에 없을 때 쓸 날짜
+    const fallback = {} // 무시된 커밋밖에 없을 때 쓸 날짜 (파일을 처음 만든 날)
 
     let hash = ''
     let date = ''
+    let subject = ''
     for (const line of log.split('\n')) {
       if (line.startsWith('@@')) {
-        ;[hash, date] = line.slice(2).split(' ')
+        ;[hash, date, ...subject] = line.slice(2).split(' ')
+        subject = subject.join(' ')
         continue
       }
       if (!line.trim()) continue
@@ -69,7 +73,7 @@ function compute() {
       const file = tracking.get(path)
       if (!file) continue
 
-      if (isIgnored(hash)) fallback[file] ??= date
+      if (isIgnored(hash, subject)) fallback[file] = date // 가장 오래된(=처음 만든) 날짜가 남는다
       else result[file] ??= date
 
       if (status.startsWith('R')) {

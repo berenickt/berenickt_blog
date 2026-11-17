@@ -37,6 +37,16 @@ export default {
       pagination: false,
     },
   },
+  tags: {
+    title: '태그',
+    type: 'page',
+    display: 'hidden', // 헤더 메뉴에서는 숨기고 사이드바 링크로 들어간다
+    theme: {
+      sidebar: false,
+      toc: false,
+      pagination: false,
+    },
+  },
   about: {
     title: '소개',
     type: 'page',
