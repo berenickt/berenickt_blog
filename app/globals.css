@@ -170,36 +170,90 @@ main blockquote blockquote {
 }
 
 /* ───────────── 목록 ───────────── */
-main > ul {
-  list-style-type: disc;
+/*
+ * 글 본문(MDX)의 목록에만 적용한다. (Nextra가 x:list-disc / x:list-decimal 클래스를 붙임)
+ * 태그·전체 글 트리처럼 직접 만든 목록은 영향을 받지 않는다.
+ */
+main :is(ul, ol)[class*='x:list-'] {
+  margin: 0.9rem 0 0;
+  padding-inline-start: 1.35rem;
+  margin-inline-start: 0;
 }
 
-main > ul ul {
-  list-style-type: circle;
+/* 하위 목록: 들여쓰기를 조금 줄이고, 위 항목과 붙여서 계층이 보이게 */
+main li > :is(ul, ol)[class*='x:list-'] {
+  margin: 0.3rem 0 0.1rem;
+  padding-inline-start: 1.2rem;
 }
 
-main > ul ul ul {
-  list-style-type: square;
+/* 제목 바로 아래 목록은 간격을 줄임 */
+main > :is(h2, h3, h4) + :is(ul, ol)[class*='x:list-'] {
+  margin-top: 0.6rem;
 }
 
-main > ol ol {
-  list-style-type: lower-roman;
+/* 항목 간격: 위·아래 여백 대신 위쪽만 써서 간격을 일정하게 */
+main [class*='x:list-'] > li {
+  margin: 0;
+  padding-inline-start: 0.2rem;
+  line-height: 1.65; /* 한 항목 안의 줄 간격 < 항목 사이 간격 → 항목 구분이 잘 보이게 */
 }
 
-main > ol ol ol {
-  list-style-type: lower-latin;
+main [class*='x:list-'] > li + li {
+  margin-top: 0.45rem;
 }
 
-main :is(ul, ol) > li {
+/* 하위 목록 항목은 조금 더 촘촘하게 */
+main li [class*='x:list-'] > li + li {
   margin-top: 0.25rem;
 }
 
-main :is(ul, ol) > li::marker {
+/* 항목 안의 문단(빈 줄로 띄운 목록)은 추가 여백 없이 */
+main [class*='x:list-'] > li > p {
+  margin-top: 0;
+}
+
+main [class*='x:list-'] > li > p + p {
+  margin-top: 0.4rem;
+}
+
+/* 글머리 기호: 단계별 모양 + 브랜드 색 */
+main ul[class*='x:list-'] {
+  list-style-type: disc;
+}
+
+main ul[class*='x:list-'] ul[class*='x:list-'] {
+  list-style-type: circle;
+}
+
+main ul[class*='x:list-'] ul[class*='x:list-'] ul[class*='x:list-'] {
+  list-style-type: square;
+}
+
+main ol[class*='x:list-'] ol[class*='x:list-'] {
+  list-style-type: lower-alpha;
+}
+
+main ol[class*='x:list-'] ol[class*='x:list-'] ol[class*='x:list-'] {
+  list-style-type: lower-roman;
+}
+
+main [class*='x:list-'] > li::marker {
   color: var(--x-color-primary-500);
 }
 
-main > :is(ul, ol) {
-  margin-top: 0.75rem;
+main li [class*='x:list-'] > li::marker {
+  color: color-mix(in oklab, var(--x-color-primary-500) 65%, transparent);
+}
+
+/* 번호 목록: 숫자 폭을 맞추고 조금 굵게 */
+main ol[class*='x:list-'] > li::marker {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 목록 다음에 오는 문단·코드블록과의 간격 */
+main > :is(ul, ol)[class*='x:list-'] + :is(p, div, pre) {
+  margin-top: 1rem;
 }
 
 /* ───────────── 이미지 ───────────── */
