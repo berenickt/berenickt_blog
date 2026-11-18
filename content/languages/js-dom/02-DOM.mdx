@@ -129,7 +129,7 @@ cf. [MDN CSSOM](https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Mode
 즉, 최종적으로 브라우저에 표기될 요소들만 `Render Tree`에 선별되어서 표기가 됩니다.
 
 Render Tree에 body태그만 있는 것을 확인할 수 있는데,
-왜냐하면 DOM의 head 태그는 사용자들에게 보여지지 않기 떄문입니다.
+왜냐하면 DOM의 head 태그는 사용자들에게 보이지 않기 때문입니다.
 
 예를 들면, span의 `opacity: 0, visibility: hidden` 으로 설정되었다면,
 사용자 눈에는 보이지 않지만 요소는 그대로 그 자리에 있습니다.
@@ -174,7 +174,7 @@ Render Tree에 body태그만 있는 것을 확인할 수 있는데,
   - DOM요소로 변환하고, CSSOM을 만들고, Render Tree를 최종적으로 만드는 것까지를 의미
 - `Operation 파트`
   - 브라우저가 이해할 수 있는 Rendering Tree를 이용해서 구조를 작성하고, 어디에다 배치할 건지 계산한 다음에 실제 브라우저에 그림을 그려주는(redering) 부분
-  - layout, paint, composition을 통해 최종적으로 사용자에게 웹페이지 내용이 보여지기까지를 의미
+  - layout, paint, composition을 통해 최종적으로 사용자에게 웹페이지 내용이 보이기까지를 의미
 
 ---
 
@@ -218,4 +218,4 @@ DOM(HTML)에서 어떻게 Render Tree를 빠르게 만들 수 있을까요? 당�
 
 #### 5.4.2 Operation 파트
 
-Operation Time에는 처음에 사용자에게 표기하는 것도 중요하지만 나중에 사용자가 클릭을 통해 요소를 움직이거나 애니메이션을 쓸 떄, paint가 자주 일어나지 않도록 만드는 것이 중요하겠죠? 예를 들어, 요소의 위치를 옮기는데 무언가 다시 그림을 그려야 한다면 paint가 다시 발생하기 때문에 성능에 좋지 않겠죠. 최악의 경우는 layout을 수정해서 다른 요소들의 position도 바뀌는 경우 다시 처음부터 그림을 그려야 하기 때문에 성능에 가장 좋지 않습니다. 그래서 우리가 JavaScript나 CSS로 DOM 요소를 조작할 때, composition만 일어나면 성능이 가장 좋습니다. point가 디시 일어난다면 나쁘지도 썩 좋지도 않겠지만, layout이 다시 일어난다면 최악의 경우가 됩니다.
+Operation Time에는 처음에 사용자에게 표기하는 것도 중요하지만 나중에 사용자가 클릭을 통해 요소를 움직이거나 애니메이션을 쓸 때, paint가 자주 일어나지 않도록 만드는 것이 중요하겠죠? 예를 들어, 요소의 위치를 옮기는데 무언가 다시 그림을 그려야 한다면 paint가 다시 발생하기 때문에 성능에 좋지 않겠죠. 최악의 경우는 layout을 수정해서 다른 요소들의 position도 바뀌는 경우 다시 처음부터 그림을 그려야 하기 때문에 성능에 가장 좋지 않습니다. 그래서 우리가 JavaScript나 CSS로 DOM 요소를 조작할 때, composition만 일어나면 성능이 가장 좋습니다. point가 디시 일어난다면 나쁘지도 썩 좋지도 않겠지만, layout이 다시 일어난다면 최악의 경우가 됩니다.

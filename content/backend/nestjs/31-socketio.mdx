@@ -141,15 +141,15 @@ socket.on('hello', (message, callback) => {
 
 ![namespace-room](https://raw.githubusercontent.com/berenickt/image-server/main/img/namespace-and-room.png)
 
-- 클라이언트(모바일, 웹)가 서버에 socket.io 요청들을 넣을떄,
+- 클라이언트(모바일, 웹)가 서버에 socket.io 요청들을 넣을 때,
   - 아무것도 정의하지 않으면 namespace가 기본으로 `/`가 정의된다.
   - 아무것도 넣지 않고 emit하면 `/` namespace로 정의된다.
 - REST API에서 path를 짜듯이, Namespace라는 거를 만들게 된다.
   - 여러 개의 Namespace가 있으면, 원하는 Namespace를 골라서 요청할 수 있다
 - 근데 서버에서는 namespace 안에서 또 Room으로 나눌 수가 있다.
   - `/chat`에 요청을 넣고 채팅을 한다.
-  - 이떄 `/chat`의 각각의 룸들은 카톡에서 각각의 채팅방 리스트와 같다.
-  - 그리고 `/noti/room1`과 `/chat/room1`은 완전 다르고, 연결이 안된다.
+  - 이때 `/chat`의 각각의 룸들은 카톡에서 각각의 채팅방 리스트와 같다.
+  - 그리고 `/noti/room1`과 `/chat/room1`은 완전 다르고, 연결이 안 된다.
 
 ---
 

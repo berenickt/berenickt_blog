@@ -34,7 +34,7 @@ Action → Dispatcher →  Store  →  View
 Action, Dispatcher, Store, View 등으로 구성됨
 
 - `Action`
-  - 사용자의 Input을 통해서, 또는 상태를 바꿔야만 할때 발생
+  - 사용자의 Input을 통해서, 또는 상태를 바꿔야만 할 때 발생
   - Action (type, parameter)
 - `Dispatcher (발송인)`
   - 모든 데이터의 흐름을 관리하는 **중앙 허브**
@@ -138,7 +138,7 @@ console.log(func())
 
 ### 4.5 redux-thunk
 
-- 비동기 작업을 처리할때 가장 많이 사용하는 middleware
+- 비동기 작업을 처리할 때 가장 많이 사용하는 middleware
 - 객체 대신 함수를 Dispatch 할 수 있게 해주는 것
 
 ```js
@@ -205,7 +205,7 @@ function* counterSaga() {
     - 잘못 다뤄지면 수없이 많은 콜백 지옥에 빠짐
 - `redux saga`
   - pros
-    - 초기에 구현해야할 Boilerplate가 많음
+    - 초기에 구현해야 할 Boilerplate가 많음
     - 순수함수로 작성되기 때문에 테스트 적용이 쉬움
   - cons
     - 높은 러닝커브 (ES6 제너레이터)
@@ -299,7 +299,7 @@ const componentA = () => {
 
 - React 16.3 버전부터 지원
 - props-drilling을 제거하기 위해 탄생
-- 간단한 전역변수(e.g. theme, intl)를 선언할때 사용
+- 간단한 전역변수(e.g. theme, intl)를 선언할 때 사용
 
 ---
 

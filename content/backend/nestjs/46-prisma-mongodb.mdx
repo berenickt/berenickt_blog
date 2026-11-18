@@ -106,7 +106,7 @@ model Post {
 }
 ```
 
-- Relation은 One to One, One to Many, Many to Many Relationship을 형성할때 사용된다.
+- Relation은 One to One, One to Many, Many to Many Relationship을 형성할 때 사용된다.
 - fields에 레퍼런스로 사용할 자신의 칼럼을 입력하고 references에 상대 칼럼을 입력한다.
 - onDelete, onUpdate등 attribute 정의도 가능하다
 
@@ -501,7 +501,7 @@ model Category {
 |   함수   |  설명   |
 | :------: | :-----: |
 |  `_avg`  |  평균   |
-| `_count` |  갯수   |
+| `_count` |  개수   |
 |  `_sum`  |  합계   |
 |  `_min`  | 최소 값 |
 |  `_max`  | 최대 값 |
@@ -555,7 +555,7 @@ prisma migrate deploy
 - NoSQL을 사용해야하는 이유?
   - NoSQL은 SQL에 비해 매우 유연하고 수평적 스케일링 (Horizontal Scaling)에 매우 유리하다.
   - 대량의 데이터를 다루기위해 설계됐다.
-  - 지속적으로 구조가 변화는 데이터를 다룰때 매우 유리하다
+  - 지속적으로 구조가 변화는 데이터를 다룰 때 매우 유리하다
 
 ---
 

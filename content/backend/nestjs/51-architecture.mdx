@@ -40,8 +40,8 @@ cf. https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 ![](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
 
-- 원의 내부에 있는 레이어는 바깥의 변경에 영향을 받으면 안된다.
-- 외부 레이어는 내부 레이어에 의존 할 수 있다. 하지만 내부 레이어는 외부 레이어에 의존하면 안된다.
+- 원의 내부에 있는 레이어는 바깥의 변경에 영향을 받으면 안 된다.
+- 외부 레이어는 내부 레이어에 의존 할 수 있다. 하지만 내부 레이어는 외부 레이어에 의존하면 안 된다.
 - 의존성의 역전을 위해 Dependency Inversion을 사용한다
 
 ---
@@ -52,7 +52,7 @@ cf. https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 - Hexagonal Architecture와 가장 다른점(?) 이라고 볼 수 있다.
 - Clean Architecture는 SRP (Single Responsibility Principle)을 강조한다.
-  - 비즈니스 로직 레이어에서 실행해야할 기능 하나 하나를 하 나의 클래스에 정의한다.
+  - 비즈니스 로직 레이어에서 실행해야 할 기능 하나 하나를 하 나의 클래스에 정의한다.
 
 ---
 
@@ -185,10 +185,10 @@ export class Order {
 - 도메인의 가장 중요한 논리들을 담고있는다.
 - 가장 중요하지만 단순한 로직으로 행사한다.
 - 외부 의존성이 없어야한다.
-  - 외부에 의존하게 되면 외부 의존성이 변경됐을때, 도메인이 함께 변경돼야 한다.
-  - 도메인은 절대로 외부에 의해 변경 되면 안된다.
+  - 외부에 의존하게 되면 외부 의존성이 변경됐을 때, 도메인이 함께 변경돼야 한다.
+  - 도메인은 절대로 외부에 의해 변경 되면 안 된다.
 - 비즈니스 로직의 큰 변경사항이 있다면 이 변경사항은 도메인으로부터 파생돼야한다.
-  - 다른 외부 요소 가 도메인을 변경시키면 안된다.
+  - 다른 외부 요소 가 도메인을 변경시키면 안 된다.
 
 ![fastcam-architecture_51-1](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-1.png)
 
@@ -267,7 +267,7 @@ export class Order {
 
 ![fastcam-architecture_51-7](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-7.png)
 
-(1) `Presentation Layer`는 직역적으로 해석 했을때 **UI를 의미**한다.
+(1) `Presentation Layer`는 직역적으로 해석 했을 때 **UI를 의미**한다.
 
 - 하지만 아키텍처는 어떤 문맥이든 적용 할 수 있어야 하기 때문에 그냥 최전방이라고 생각하면 된다.
 - 즉, NestJS의 문맥에서는 `Controller`가 된다.
@@ -375,11 +375,11 @@ export class OrderRepository {
   - Top Down 방식이 사람에게 가장 자연스러운 구현이기 때문에,
   - 현대 소프트웨어에서 `Layered Architecture`를 자연스럽게 많이 사용하게 된다.
 - `Layered Architecture`는 결국 모든 레이어가 가장 아래에 의존하게 되기 때문에,
-  - 소프트웨어 설계를 할때 자연스럽게 데이터베이스 설계부터 생각하게 된다.
-  - 우리가 일반적으로 소프트웨어를 처음 만들때를 생각해보자.
+  - 소프트웨어 설계를 할 때 자연스럽게 데이터베이스 설계부터 생각하게 된다.
+  - 우리가 일반적으로 소프트웨어를 처음 만들 때를 생각해보자.
   - 가장 먼저 생각하는건 “테이블 어떻게 만들지?”다.
 - 여기서 의문이 생기게 된다. 소프트웨어가 풀어내려는 가장 중요한 문제가 `Business Logic`
-  - 즉, `Business Layer`에 있는 문제들인데 이 부분이 과연 외부적인 요인에 영향을 받게되는게 맞는것인가?
+  - 즉, `Business Layer`에 있는 문제들인데 이 부분이 과연 외부적인 요인에 영향을 받게되는 게 맞는것인가?
 - 이게 잘못됐다 생각해서 만들어낸 아키텍처가 `Clean Architecture`와 `Hexagonal Architecture`다.
   - 절대로 정답은 없다.
   - Layered Architecture는 누구나 직관적으로 이해 할 수 있고 자연스럽게 코드를 작성 할 수 있다.
@@ -453,7 +453,7 @@ export class OrderRepository {
   - Mutable인 Entity와 다르게 Immutable이다.
 - Aggregate → Entity와 Value Object들을 소유하는 객체다. Aggregate 내부에 있는
 - Repositories → 우리가 알고있는 Repository와 동일하다. 데이터 영속을 위해 사용되는 개념이다.
-- Services → 여러개의 Aggregate가 함께 작동해야하는 코드를 작성할때 사용된다.
+- Services → 여러개의 Aggregate가 함께 작동해야하는 코드를 작성할 때 사용된다.
 
 ---
 
@@ -498,12 +498,12 @@ Transactional Boundary → Transactional Boundary에 속하는 객체는
 ![fastcam-architecture_51-13](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/fastcam-architecture_51-13.png)
 
 - 각 도메인은 코어 비즈니스 기능을 담당한다.
-- 개발자가 아닌 일반 사람이 한 도메인의 명칭을 봤을때 무슨 역할을 하는지 알 수 있게 분리 해야한다.
+- 개발자가 아닌 일반 사람이 한 도메인의 명칭을 봤을 때 무슨 역할을 하는지 알 수 있게 분리 해야한다.
   - (Domain Expert:DDD)
 - 처음부터 완벽히 도메인을 나눌 필요가 없다. 개발해가면서 독립 가능하다고 생각하는 부분들을 분리하면 된다.
   - (Shipping 도메인에 일반 택배, 항공 택배를 같이 구현하다가 서로 관련성이 멀어지고
   - 너무 커지면 나중에 나눠도 된다.)
-- 도메인을 다룰때는 그 도메인 하나의 관점에서 작업을 한다.
+- 도메인을 다룰 때는 그 도메인 하나의 관점에서 작업을 한다.
   - 예를 들어, Order에서 Customer 고객이 존재하고 Payment에 Payer가 존재할 수 있다.
   - 둘은 같은 사용자를 지칭하지만 서로 다른 도메인이기 때문에 이는 중복이 아니다.
 
@@ -527,10 +527,10 @@ Transactional Boundary → Transactional Boundary에 속하는 객체는
   - 조회 기능만 독립적으로 확장하고 명령 요청 (주문등)은 확장하지 않을 수 있다.
 - 성능 최적화를 위해 각각 최적화된 데이터베이스를 사용 할 수 있다.
   - 특히, 조회 기능은 데이터를 denormalize 한 상태로 저장해두고,
-  - 조회 요청이 있을때 따로 join등의 복잡한 쿼리 없이 즉각적인 응답을 할 수 있다.
+  - 조회 요청이 있을 때 따로 join등의 복잡한 쿼리 없이 즉각적인 응답을 할 수 있다.
 - Command와 Query에 독립적인 보안을 설정해서 개발 할 수 있다.
   - Query는 상대적으로 보안을 약하게 설정하고 Command는 세세하게 보안 설정을 할 수 있다.
-- Microservice를 운영했을때의 장점과 단점이 거의 상속된다.
+- Microservice를 운영했을 때의 장점과 단점이 거의 상속된다.
 
 ---
 

@@ -52,7 +52,7 @@ JS는 `동기적(synchronous)`으로 동작합니다. 호이스팅이 된 후로
 ### 2.1 콜백 함수
 
 - 정의 : 함수에 파라미터로 들어가는 함수
-- 용도 : 순차적으로 실행하고 싶을 떄 사용
+- 용도 : 순차적으로 실행하고 싶을 때 사용
 
 ```js
 document.querySelector('.button').addEventListener('click', function () {
@@ -74,7 +74,7 @@ function seceond() {}
 first(seceond)
 ```
 
-이제는 단순히 콜백함수를 만드는 건 쓸모가 없습니다. 특정 코드를 순차적으로 정하고 싶을 떄만 사용합니다.
+이제는 단순히 콜백함수를 만드는 건 쓸모가 없습니다. 특정 코드를 순차적으로 정하고 싶을 때만 사용합니다.
 
 ---
 
@@ -85,7 +85,7 @@ first(seceond)
 **JS 언어 자체는 동기적으로 동작**하지만, JavaScript Runtime 환경(=호스트 환경)에서 제공해주는 다양한 API들이 있습니다.
 브라우저라면, Web API, Node라면 Node API 등이 있습니다.
 
-**API들은 비동기적으로 동작**하기 떄문에(=멀티 쓰레드환경으로 동작하기 떄문에)
+**API들은 비동기적으로 동작**하기 때문에(=멀티 쓰레드환경으로 동작하기 때문에)
 다양한 일들을 **동시다발적으로 처리**(=비동기화)할 수 있습니다.
 
 예를 들어, 다른 웹 서버에 네트워크 통신을 주고받을 수 있는 fetch와 setTimeout API도 비동기적입니다.
@@ -513,7 +513,7 @@ pickOnlyOne().then(console.log) // 결과는 🍎
 
 - `Promise.all` : 병렬적으로 한번에 모든 Promise들을 실행
   - Promise 배열을 전달하게 되면 모든 Promise들이 병렬적으로 다 받을 때까지 모아줌
-- `Promise.race` : 주어진 Promise중에 제일 빨리 수행된것을 출력
+- `Promise.race` : 주어진 Promise중에 제일 빨리 수행된 것을 출력
   - 가장 먼저 처리되는 프로미스의 결과(혹은 에러)를 반환
 
 ```js

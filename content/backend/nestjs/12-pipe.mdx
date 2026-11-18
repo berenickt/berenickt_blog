@@ -139,7 +139,7 @@ export class MovieController {
 
 - cf. https://docs.nestjs.com/pipes#built-in-pipes
 
-어떤 데코레이터이든, 2번쨰 파라미터에다가 검증하고 싶은 형태를 넣으면 된다.
+어떤 데코레이터이든, 2번째 파라미터에다가 검증하고 싶은 형태를 넣으면 된다.
 
 ```ts posts.controller.ts
 // posts.controller.ts 생략
@@ -261,7 +261,7 @@ postPosts(
 }
 ```
 
-new로 인스턴스화를 해주면, 해당 함수가 실행될 떄마다 DefaultValuePipe가 새로 생성된다. 다른 Pipe에서도 new 인스턴스화를 해줄 수도 있다.
+new로 인스턴스화를 해주면, 해당 함수가 실행될 때마다 DefaultValuePipe가 새로 생성된다. 다른 Pipe에서도 new 인스턴스화를 해줄 수도 있다.
 
 ---
 
@@ -326,4 +326,4 @@ postRegisterEmail(
 }
 ```
 
-여러 개의 파이프를 넣고 싶으면, 2번쨰 파라미터부터 계속 넣으면, 계속 연달아서 파이프가 적용된다.
+여러 개의 파이프를 넣고 싶으면, 2번째 파라미터부터 계속 넣으면, 계속 연달아서 파이프가 적용된다.

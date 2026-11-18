@@ -126,7 +126,7 @@ function Todos() {
 백그라운드 refetches와 오래된 검증 로직은 모든 status와 fetchStatus을 위한 조합을 만들 수 있다.
 예를 들면:
 
-- `success 상태`의 query는 일반적으론 `idle` fetchStatus이지만, 백그라운드 refetch가 발생했을때, `fetching`에도 있을 수 있다.
+- `success 상태`의 query는 일반적으론 `idle` fetchStatus이지만, 백그라운드 refetch가 발생했을 때, `fetching`에도 있을 수 있다.
 - 마운트되고 데이터가 없는 query는 일반적으로 `pending`과 `fetching` fetchStatus지만, 네트워크 연결이 없는 경우 `paused`될 수도 있습니다.
 
 따라서 실제로 데이터를 가져오지 않고도, query가 `pending` 상태에 있을 수 있음을 명심하자!

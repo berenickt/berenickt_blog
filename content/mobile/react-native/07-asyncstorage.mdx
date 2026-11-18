@@ -78,8 +78,8 @@ const result = await AsyncStorage.getItem('KEY') // result is value
 
 ## 2. fetch API
 
-- RemoteURL에 있는 리소스를 가져올때 사용
-- React-Native에서 새로 정의 한것이 아닌, MDN에 이미 만들어진것
+- RemoteURL에 있는 리소스를 가져올 때 사용
+- React-Native에서 새로 정의 한 것이 아닌, MDN에 이미 만들어진것
 
 ---
 
@@ -94,13 +94,13 @@ const result = await AsyncStorage.getItem('KEY') // result is value
 
 - 어떤 동작을 위한 요청인지를 미리 나타내는것
 - 종류 : GET, POST, PUT, PATCH, DELETE
-  - `GET` : 특정 리소스를 가져와야 할때 사용
+  - `GET` : 특정 리소스를 가져와야 할 때 사용
     - e.g. 특정 회원의 데이터 조회, 특정 성별을 가진 회원들을 조회 등
-  - `POST` : 어떠한 데이터의 저장해야 할때 사용
+  - `POST` : 어떠한 데이터의 저장해야 할 때 사용
     - e.g. 회원가입, 로그인 등
-  - `PUT` : 특정 리소스를 업데이트 할때 사용
+  - `PUT` : 특정 리소스를 업데이트 할 때 사용
     - e.g. 회원의 주소 데이터, 결제 데이터 등
-  - `PATCH` : 특정 리소스 중 특정 정보만 변경할때 사용
+  - `PATCH` : 특정 리소스 중 특정 정보만 변경할 때 사용
     - e.g. 회원의 나이, 전화번호 등
   - `DELETE` : 리소스를 아에 삭제
     - e.g. 회원 탈퇴 등
@@ -128,8 +128,8 @@ const result = await AsyncStorage.getItem('KEY') // result is value
 #### 2.3.1 Request 데이터 전달 (항목별 사용처)
 
 1. `Path Parameter` : 특정 유저 ID를 통해 정보를 가져올 때
-2. `Query Parameter` : 이름, 성별로 검색해서 가져올때
-3. `Request Body` : 회원가입, 게시글 등록 할때
+2. `Query Parameter` : 이름, 성별로 검색해서 가져올 때
+3. `Request Body` : 회원가입, 게시글 등록 할 때
 
 ---
 

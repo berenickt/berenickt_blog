@@ -24,7 +24,7 @@ cf. 필요할 땐 특정 브랜치 1개만 clone 해올 수 있습니다
 
 # 2. 팀원이 commit 시 문제
 
-git push는 맘대로 할 수 있는게 아닙니다. **다른 사람이 만든 파일이 원격저장소에 생기면 git push 못합니다.**
+git push는 맘대로 할 수 있는 게 아닙니다. **다른 사람이 만든 파일이 원격저장소에 생기면 git push 못합니다.**
 
 예를 들어 b라는 파일을 만들고 commit해서 원격저장소가 타인에 의해 업데이트되었다고 칩시다.
 
@@ -47,7 +47,7 @@ hint: (e.g., 'git pull ...') before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 ```
 
-**"에러납니다"** 왜냐하면 **원격 vs 로컬 내용이 다르다면** 로컬저장소에서 git push가 안됩니다.
+**"에러납니다"** 왜냐하면 **원격 vs 로컬 내용이 다르다면** 로컬저장소에서 git push가 안 됩니다.
 왜냐면 그런 상황에서 대충 git push 해버리면 코드가 꼬이기 때문에 얘가 미리 예방해주는 것일 뿐입니다.
 
 ---

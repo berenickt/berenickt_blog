@@ -92,17 +92,17 @@ Git을 설치하게 되면 Git에 관련된 모든 환경설정이 `.gitconfig`�
 - 윈도우의 경우 carriage-return과 line feed가 동시에 들어가는 반면에,
 - MAC에서는 line feed 하나만 들어갑니다.
 
-이런 차이점 떄문에 Git Repository를 다양한 운영체제에서 쓰는 경우 내가 수정하지 않았음에도 불구하고
+이런 차이점 때문에 Git Repository를 다양한 운영체제에서 쓰는 경우 내가 수정하지 않았음에도 불구하고
 줄바꿈 문자열이 달라져서 Git History나 Git Blame을 보는데 문제가 있을 수 있습니다.
 
 이것을 수정하는 속성이 autocrlf 설정입니다.
 
 - 윈도우에서 true로 설정하게 되면
-  - Git에 저장할 떄는 carriage-return을 삭제하게 되고,
-  - 다시 Git에서 윈도우로 가져올 떄는 자동으로 carriage-return을 붙여줍니다.
+  - Git에 저장할 때는 carriage-return을 삭제하게 되고,
+  - 다시 Git에서 윈도우로 가져올 때는 자동으로 carriage-return을 붙여줍니다.
 - Mac에서는 input으로 설정하게 되면
-  - Git에서 받아올 떄는 별다른 수정이 일어나지 않지만,
-  - 저장할 떄는 carriage-return을 삭제해줍니다.
+  - Git에서 받아올 때는 별다른 수정이 일어나지 않지만,
+  - 저장할 때는 carriage-return을 삭제해줍니다.
 
 ```sh
 # MAC 사용자는 git config --global core.autocrlf input

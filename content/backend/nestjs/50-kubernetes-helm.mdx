@@ -63,12 +63,12 @@ Worker Node의 구성
 
 ![nestjs-fastcam-kubernetes_50-4](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-4.png)
 
-- Pod 하나에는 하나의 컨테이너를 실행하는게 일반적이다.
+- Pod 하나에는 하나의 컨테이너를 실행하는 게 일반적이다.
 - 하지만 컨테이너와 밀접한 통신을 요구하는 경우 Pod에 여러개의 컨테이너를 실행 할 수도 있다.
 
 ![nestjs-fastcam-kubernetes_50-5](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-5.png)
 
-- A Pod의 보조 역할을 하는 B Pod가 존재한다고 가정한다면 A Pod가 생성 될때마다 B Pod를 항상 함께 생성해야한다.
+- A Pod의 보조 역할을 하는 B Pod가 존재한다고 가정한다면 A Pod가 생성 될 때마다 B Pod를 항상 함께 생성해야한다.
 - 매번 두개의 Pod를 실행하고 삭제하려면 매우 번거럽고 Pod간의 통신도 설정해줘야한다.
 - 그래서 밀접한 관계가 있는 경우 하나의 Pod에 여러개의 컨테이너를 실행한다
 
@@ -76,7 +76,7 @@ Worker Node의 구성
 
 ### 1.6 ReplicaSet
 
-ReplicaSet은 Kubernetes 스케일링 기능의 핵심으로 명시된 Pod 갯수가 항상 실행되고 있을 수 있도록 보장해주는 역할을 한다.
+ReplicaSet은 Kubernetes 스케일링 기능의 핵심으로 명시된 Pod 개수가 항상 실행되고 있을 수 있도록 보장해주는 역할을 한다.
 
 - `High Availability` : 한국어로 흔히 “고가용성”이라고 이야기한다.
   - 똑같은 Pod를 여러개 복제해서 어느 한 Pod가 문제가 생기거 죽더라도,
@@ -85,13 +85,13 @@ ReplicaSet은 Kubernetes 스케일링 기능의 핵심으로 명시된 Pod 갯�
 - `Load Balancing` :
   - 여러개의 Pod를 실행하면 같은 역할을 하고있는 Pod간 트래픽을 분산해줄 수 있는 시스템이 필요하다.
   - Kubernetes는 자동으로 Load Balancing을 해준다
-- `Scaling` : 설정한 Pod의 갯수만큼 자동으로 Pod 갯수가 늘어나고 줄어들도록 해준다.
+- `Scaling` : 설정한 Pod의 개수만큼 자동으로 Pod 개수가 늘어나고 줄어들도록 해준다.
   - ReplicaSet은 하나의 `Node에 귀속되지 고 여러 Node에 걸쳐 설정 될 수 있다.
 - `Label Selector` : 레이블 정의에 따라 ReplicaSet 정의에 입력해두지 않은 Pod들도 ReplicaSet에 의해 관리되도록 할 수 있다.
 
 ![nestjs-fastcam-kubernetes_50-6](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-6.png)
 
-ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행되고 있도록한다.
+ReplicaSet은 같은 레이블의 Pod들이 정의된 개수만큼 항상 실행되고 있도록한다.
 
 ---
 
@@ -108,7 +108,7 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 
 ![nestjs-fastcam-kubernetes_50-8](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-8.png)
 
-- Blue Green Update를 업데이트 할때 리소스가 두배로 필요하다.
+- Blue Green Update를 업데이트 할 때 리소스가 두배로 필요하다.
 - Rolling Update를 하면 최소한의 추가 리소스로 전체 업데이트를 진행 할 수 있다.
 - Blue Green Update는 네트워크 설정이 조금 엇나가면 서비스에 다운타임이 생길 수 있다.
 - Rolling Update는 서서히 업데이트를 진행하기 때문에 다운타임이 생기지 않는다.
@@ -122,7 +122,7 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 ![nestjs-fastcam-kubernetes_50-10](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-10.png)
 
 - Namespace는 Kubernetes 클러스터에서 환경을 분리하는데 사용된다.
-- Namespace가 다른 Pod끼리 통신은 가능하지만 kubectl CLI를 사용할때 현재 지정돼있는 namespace를 기준으로 실행된다
+- Namespace가 다른 Pod끼리 통신은 가능하지만 kubectl CLI를 사용할 때 현재 지정돼있는 namespace를 기준으로 실행된다
 
 ---
 
@@ -130,9 +130,9 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 
 - ConfigMap과 Secret은 Kubernetes에서 애플리케이션 설정을 관리하는 리소스다.
 - Pod에 ConfigMap이나 Secret에 설정된 값들을 환경변수로 주입 해줄 수 있다.
-- ConfigMap은 Plain Text로 민감하지 않은 데이터를 저장할때 사용된다.
+- ConfigMap은 Plain Text로 민감하지 않은 데이터를 저장할 때 사용된다.
   - 좋은 예제로는 URL, 포트 정보등이 있다.
-- Secret은 암호화가 필요한 값들을 저장할때 사용된다. 좋은 예제로는 비밀번호, API 키, 인증서등이 있다
+- Secret은 암호화가 필요한 값들을 저장할 때 사용된다. 좋은 예제로는 비밀번호, API 키, 인증서등이 있다
 
 ---
 
@@ -155,7 +155,7 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 
 ### 1.13 Kubernetes Services
 
-- Kubernetes Service는 Pod들을 네트워크로 연결할때 사용한다.
+- Kubernetes Service는 Pod들을 네트워크로 연결할 때 사용한다.
 - Kubernetes Service는 대표적으로 NodePort, ClusterIP가 존재한다.
 
 ---
@@ -166,7 +166,7 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 
 - NodePort는 말 그대로 “외부에서” Node에 접속 할 수 있게 해주는 포트를 의미한다.
 - 30000번 포트부터 32767번 포트까지 사용 가능하다.
-- 여러개의 Pod를 Load Balancing 할 수 있고 여러개의 Node를 포괄 할수도 있다.
+- 여러개의 Pod를 Load Balancing 할 수 있고 여러개의 Node를 포괄 할 수도 있다.
 
 ---
 
@@ -199,9 +199,9 @@ ReplicaSet은 같은 레이블의 Pod들이 정의된 갯수만큼 항상 실행
 
 ![nestjs-fastcam-kubernetes_50-15](https://raw.githubusercontent.com/berenickt/image-server/refs/heads/main/nestjs/nestjs-fastcam-kubernetes_50-16.png)
 
-- Persistent Volume은 특정 Pod와 관계 없이 저장 리소스를 배정할때 사용된다.
-  - 원하는 크기로 PV를 배정해두면 Pod에서 PV가 필 요할때 PVC를 통해 적절한 PV를 할당받게 된다.
-- PVC는 PV를 점유할때 사용된다.
+- Persistent Volume은 특정 Pod와 관계 없이 저장 리소스를 배정할 때 사용된다.
+  - 원하는 크기로 PV를 배정해두면 Pod에서 PV가 필 요할 때 PVC를 통해 적절한 PV를 할당받게 된다.
+- PVC는 PV를 점유할 때 사용된다.
   - Pod에서 필요한 스펙의 저장 공간을 PVC로 정의하면,
   - Kubernetes에서 자동으로 현재 사용 할 수 있는 PV 중에 적합한 저장소를 배정해준다
 

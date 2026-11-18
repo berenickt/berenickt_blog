@@ -19,8 +19,8 @@ tags: [Mobile, React Native]
   - 작성한 Javascript가 실행 되는곳
 - React-Native Thread (3)
   - Native Module Thread
-  - Native Module을 다룰때 사용하게 되는 Thread
-  - 특정 리소스등을 요청하고자 할때 사용
+  - Native Module을 다룰 때 사용하게 되는 Thread
+  - 특정 리소스등을 요청하고자 할 때 사용
 - React-Native Thread (4)
   - Shadow Thread
   - virtual DOM으로부터 새로운 Layout으로 변환하도록 계산해주는 역할
@@ -35,7 +35,7 @@ Main Thread → JS Thred → Shadow Thread → Native Module Thread
 
 - `Diffing` : virtual DOM과 실제 DOM element를 비교하며 변경되었는지 체크
 - `React-Native Bridge`
-  - Javascript와 Native가 서로 소통 하는 할수 있도록 돕는 역할
+  - Javascript와 Native가 서로 소통 하는 할 수 있도록 돕는 역할
 
 ---
 
@@ -43,7 +43,7 @@ Main Thread → JS Thred → Shadow Thread → Native Module Thread
 
 - Native Module 이란 Native API를 사용하기 위한것.
   - 주로 현재 위치, wifi 상태 등 native 영역에서만 알고 있는 정보에 접근하는것
-  - 또는 image processing 처럼 연산이 native의 높은 performance가 필요할때 사용
+  - 또는 image processing 처럼 연산이 native의 높은 performance가 필요할 때 사용
 - `Native Module`
   - 로직/연산에 대한 Native Module
   - 어떤 Native Library의 함수를 호출 할 때 사용
@@ -65,8 +65,8 @@ Bridge가 가지고 있는 본질적인 문제를 해결 하기 위함
 
 #### 3.2.1 It was asyncronous (비동기 처리)
 
-- `비동기 처리` : 어떤 작업이 끝날때까지 다음 프로세스를 기다리지 않고 다른 작업을 바로 실행하는것
-- 작업이 끝났는지 보장이 되지 않아, 끝났을때에 별도 처리가 필요
+- `비동기 처리` : 어떤 작업이 끝날 때까지 다음 프로세스를 기다리지 않고 다른 작업을 바로 실행하는것
+- 작업이 끝났는지 보장이 되지 않아, 끝났을 때에 별도 처리가 필요
 
 ---
 
@@ -78,14 +78,14 @@ Bridge가 가지고 있는 본질적인 문제를 해결 하기 위함
 
 #### 3.2.3 It imposed extra overheads (변환시 드는 과도한 비용)
 
-- Bridge로 이동 하게 될때 JSON Object 변환하는 비용이 큼
+- Bridge로 이동 하게 될 때 JSON Object 변환하는 비용이 큼
 
 ---
 
 ### 3.3 New Architecture
 
 - 기존에 있던 Bridge를 버리고, JSI가 해당 역할을 대신 하도록 수정
-- `JSI` : Javascript Interface, C++ 객체에 대한 참조를 할수 있게 해주는 역할
+- `JSI` : Javascript Interface, C++ 객체에 대한 참조를 할 수 있게 해주는 역할
 
 ---
 
@@ -148,7 +148,7 @@ JS → JSI Fabric              → Native UI
   1. Platform 전반적으로 Typecheck가 잘됨
   2. 플랫폼 별 코드 공유가 쉬움 (C++로 작성된 코드를 공유)
   3. Native Module Lazy Loading이 적용됨
-     - `Lazy Loading` : 최초에 모든 리소스를 로드 하는것이 아닌, 필요 할때 로드하는 방식.
+     - `Lazy Loading` : 최초에 모든 리소스를 로드 하는 것이 아닌, 필요 할 때 로드하는 방식.
      - (최초 로드시 부하를 줄이기 위함)
   4. JSI 사용으로 인하여 Native와 Javascript코드간 통신이 효율적
      - JSON Object로 변환 없이 C++ 코드만으로 통신 가능
@@ -160,7 +160,7 @@ JS → JSI Fabric              → Native UI
 - CodeGen
   - 3rd-party library에서 제공되는 코드를 인터페이스에 맞게 작성하면
   - JSI 관련 코드들을 만들어 주는것
-  - 프로젝트를 빌드 할때 자동으로 실행 (빌드 시간에 영향)
+  - 프로젝트를 빌드 할 때 자동으로 실행 (빌드 시간에 영향)
 - New Architecture
   - 2022년 말 현재, 아직까지는 실험적인 부분들이 많음
   - 안정화 된 뒤 정식 릴리즈 예정
@@ -215,7 +215,7 @@ Bridge
 ### 7.1 worklet, shared values
 
 - `worklet` : 작은 조각의 javascript 조각
-  - 뷰 속성을 업데이트 하거나, 이벤트에 반응할때 UI Thread에서 바로 실행 시킬 수 있는 JS 조각
+  - 뷰 속성을 업데이트 하거나, 이벤트에 반응할 때 UI Thread에서 바로 실행 시킬 수 있는 JS 조각
   - worklet 생성방법
     - 함수 상단에 worklet이라는 string을 추가
 - SharedValues
@@ -238,7 +238,7 @@ Bridge
 - Data Message
 - 데이터만 전달 해주는 푸시
 - Notification은 별도로 띄우지 않음
-- 앱의 설치 여부 또는 데이터의 갱신이 필요 할때 사용
+- 앱의 설치 여부 또는 데이터의 갱신이 필요 할 때 사용
 - Notification Message
 - 실제로 유저에게 메시지와 함께 알려주는 것
 - 단순 광고성 메시지, 채팅 메시지 수신 등에서 주로 사용
@@ -278,7 +278,7 @@ Bridge
 ### 9.4 spyOn
 
 - 몰래 정보를 빼내오는 기능
-- 함수가 호출 될때 어떤 값과 함께 호출되었는지 파악 가능
+- 함수가 호출 될 때 어떤 값과 함께 호출되었는지 파악 가능
 
 ---
 
@@ -288,7 +288,7 @@ Bridge
 - 상태를 제어를 하며 맞게 렌더되는지 시각적으로 확인 가능
 - react-native뿐만 아니고 Frontend 전반적으로 사용되는 도구
 - 도입의 가장 큰 고민 Point
-  - 모든 앱의 기능들을 전부 돌려보지 않는 이상 모든 상태를 확인하는것은 사실상 불가능
+  - 모든 앱의 기능들을 전부 돌려보지 않는 이상 모든 상태를 확인하는 것은 사실상 불가능
 - 도입 결정의 이유
   - 디자인 시스템 적용을 하기 위해서 도입을 해보고자 research
   - 디자이너와 개발자간 같은 컴포넌트의 상태를 바라보고자 결정
