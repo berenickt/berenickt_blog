@@ -1257,6 +1257,7 @@ article > .nextra-border.x\:print\:hidden > a.x\:ms-auto:hover > svg {
 
   article > .nextra-border.x\:print\:hidden > a {
     max-width: none;
+    margin-inline-start: 0; /* 다음 글의 x:ms-auto 가 세로 배치에서 폭을 줄이지 않게 */
   }
 }
 
