@@ -1,5 +1,120 @@
 ---
 title: 'MySQL'
+date: 2026/11/18
 tags: [Backend, MySQL]
 ---
 
+## 1. MySQL이란?
+
+- 가장 널리 쓰이는 오픈소스 **관계형 데이터베이스(RDBMS)**
+  - 데이터를 테이블(행·열)에 저장하고, SQL로 조회·수정
+- 1995년 MySQL AB에서 시작 → 2008년 Sun → 2010년 Oracle이 인수
+  - Oracle 인수 이후 원작자들이 만든 포크가 **MariaDB** (MySQL과 거의 호환)
+- 기본 포트: `3306`
+- 무료 버전인 Community Edition과 유료 Enterprise Edition이 있음
+- 다른 DB와의 비교는 [데이터베이스 종류](/backend/database-type) 참고
+
+---
+
+## 2. 특징
+
+- `빠르고 가벼움`: 읽기 위주의 웹 서비스에서 성능이 좋음
+- `스토리지 엔진 구조`: 테이블마다 저장 방식을 고를 수 있음
+  - `InnoDB` (5.5부터 기본값): 트랜잭션, 외래 키, 행 단위 잠금 지원
+  - `MyISAM`: 트랜잭션 미지원, 지금은 거의 사용하지 않음
+- `복제(Replication)`: Source(쓰기) → Replica(읽기)로 데이터를 복제해 읽기 부하 분산
+- `방대한 생태계`: 대부분의 언어·ORM·호스팅 서비스(AWS RDS 등)가 기본 지원
+
+---
+
+## 3. Docker로 실행하기
+
+```bash
+docker run -d --name mysql \
+  -e MYSQL_ROOT_PASSWORD=비밀번호 \
+  -e MYSQL_DATABASE=mydb \
+  -p 3306:3306 \
+  -v mysql_data:/var/lib/mysql \
+  mysql:8
+```
+
+```bash
+# 컨테이너 안에서 접속
+docker exec -it mysql mysql -u root -p
+```
+
+---
+
+## 4. 기본 SQL
+
+```sql
+-- 데이터베이스
+SHOW DATABASES;
+CREATE DATABASE mydb DEFAULT CHARACTER SET utf8mb4;
+USE mydb;
+
+-- 테이블 생성
+CREATE TABLE users (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  email      VARCHAR(255) NOT NULL UNIQUE,
+  name       VARCHAR(50)  NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+SHOW TABLES;
+DESC users; -- 테이블 구조 보기
+
+-- CRUD
+INSERT INTO users (email, name) VALUES ('a@test.com', '철수');
+SELECT * FROM users WHERE name = '철수' ORDER BY id DESC LIMIT 10;
+UPDATE users SET name = '영희' WHERE id = 1;
+DELETE FROM users WHERE id = 1;
+```
+
+- 한글·이모지를 저장하려면 문자셋은 `utf8`이 아니라 `utf8mb4`를 사용
+  - MySQL의 `utf8`은 3바이트까지만 저장해 이모지가 깨짐
+- `AUTO_INCREMENT`: 행이 추가될 때마다 자동으로 1씩 증가하는 값 (PK에 주로 사용)
+
+---
+
+## 5. 사용자와 권한
+
+```sql
+CREATE USER 'app'@'%' IDENTIFIED BY '비밀번호';
+GRANT SELECT, INSERT, UPDATE, DELETE ON mydb.* TO 'app'@'%';
+FLUSH PRIVILEGES;
+```
+
+- 애플리케이션에서는 `root` 대신 필요한 권한만 가진 계정을 만들어 사용
+- `'app'@'%'`의 `%`는 모든 호스트에서 접속 허용 (`localhost`로 제한 가능)
+
+---
+
+## 6. Node.js에서 사용하기
+
+```bash
+npm i mysql2
+```
+
+```ts
+import mysql from 'mysql2/promise'
+
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'app',
+  password: process.env.DB_PASSWORD,
+  database: 'mydb',
+})
+
+// ? 자리에 값을 바인딩 → SQL Injection 방지
+const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [1])
+```
+
+- 실무에서는 [Prisma](/backend/prisma)나 TypeORM 같은 ORM과 함께 쓰는 경우가 많음
+
+---
+
+## [참고]
+
+- https://dev.mysql.com/doc/
+- https://hub.docker.com/_/mysql

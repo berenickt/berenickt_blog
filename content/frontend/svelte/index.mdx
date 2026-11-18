@@ -1,5 +1,139 @@
 ---
 title: 'Svelte'
+date: 2026/11/18
 tags: [Frontend, Svelte]
 ---
 
+## 1. Svelte란?
+
+- UI를 만드는 프론트엔드 프레임워크, 정확히는 **컴파일러**
+- React·Vue는 브라우저에서 라이브러리 코드가 동작하며 화면을 갱신하지만,
+  - Svelte는 **빌드할 때** 컴포넌트를 DOM을 직접 바꾸는 순수 JS 코드로 변환
+- Virtual DOM이 없어 번들이 작고 빠름
+- 현재 버전은 **Svelte 5** (`runes`라는 새 반응성 문법 도입)
+- 라우팅·SSR 등 앱 개발에 필요한 기능은 공식 프레임워크 **SvelteKit**이 담당 (React의 Next.js 역할)
+
+---
+
+## 2. 특징
+
+- `적은 코드`: HTML, CSS, JS를 한 파일(`.svelte`)에 자연스럽게 작성
+- `기본 제공 기능`: 스타일 스코프, 트랜지션·애니메이션, 스토어 등
+- `컴포넌트 스타일 자동 격리`: `<style>`에 쓴 CSS는 그 컴포넌트에만 적용
+- 단점: React에 비해 생태계(라이브러리, 채용 시장)가 작음
+
+---
+
+## 3. 프로젝트 만들기
+
+```bash
+npx sv create my-app
+cd my-app
+npm install
+npm run dev
+```
+
+- `sv`: Svelte 공식 CLI, SvelteKit 프로젝트를 만들어줌
+
+---
+
+## 4. 컴포넌트 기본 (Svelte 5)
+
+```svelte
+<!-- Counter.svelte -->
+<script lang="ts">
+  let { start = 0 } = $props()     // 부모에게 받는 props
+
+  let count = $state(start)        // 반응형 상태
+  let double = $derived(count * 2) // 계산된 값 (count가 바뀌면 자동 갱신)
+
+  $effect(() => {
+    console.log('count 변경:', count) // 의존하는 값이 바뀔 때 실행
+  })
+</script>
+
+<button onclick={() => count++}>
+  클릭 {count}회 (두 배: {double})
+</button>
+
+<style>
+  button {
+    padding: 0.5rem 1rem;
+  }
+</style>
+```
+
+- `$state`, `$derived`, `$effect`, `$props`처럼 `$`로 시작하는 문법을 **runes**라고 부름
+- React와 달리 `setCount` 없이 `count++`처럼 값을 바로 바꾸면 화면이 갱신됨
+
+| React                        | Svelte 5                    |
+| ---------------------------- | --------------------------- |
+| `useState`                   | `$state`                    |
+| `useMemo`                    | `$derived`                  |
+| `useEffect`                  | `$effect`                   |
+| `props` 매개변수             | `$props()`                  |
+
+---
+
+## 5. 템플릿 문법
+
+```svelte
+<script lang="ts">
+  let name = $state('')
+  let todos = $state([
+    { id: 1, text: '공부하기', done: false },
+    { id: 2, text: '운동하기', done: true },
+  ])
+</script>
+
+<!-- 양방향 바인딩 -->
+<input bind:value={name} placeholder="이름" />
+
+<!-- 조건문 -->
+{#if name}
+  <p>안녕하세요, {name}님</p>
+{:else}
+  <p>이름을 입력하세요</p>
+{/if}
+
+<!-- 반복문: (todo.id)는 React의 key 역할 -->
+<ul>
+  {#each todos as todo (todo.id)}
+    <li>
+      <input type="checkbox" bind:checked={todo.done} />
+      {todo.text}
+    </li>
+  {/each}
+</ul>
+
+<!-- 비동기 -->
+{#await fetch('/api/user').then(r => r.json())}
+  <p>불러오는 중...</p>
+{:then user}
+  <p>{user.name}</p>
+{:catch error}
+  <p>에러: {error.message}</p>
+{/await}
+```
+
+---
+
+## 6. SvelteKit 라우팅 맛보기
+
+```txt
+src/routes/
+├── +page.svelte          → /
+├── about/+page.svelte    → /about
+└── blog/[slug]/
+    ├── +page.ts          → 데이터 불러오기 (load 함수)
+    └── +page.svelte      → /blog/:slug
+```
+
+- Next.js App Router처럼 **폴더 구조가 곧 URL**
+
+---
+
+## [참고]
+
+- https://svelte.dev/docs
+- 튜토리얼(브라우저에서 바로 실습): https://svelte.dev/tutorial

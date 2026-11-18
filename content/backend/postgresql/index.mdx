@@ -1,5 +1,119 @@
 ---
 title: 'PostgreSQL'
+date: 2026/11/18
 tags: [Backend, PostgreSQL]
 ---
 
+## 1. PostgreSQL이란?
+
+- 오픈소스 **객체-관계형 데이터베이스(ORDBMS)**
+  - 줄여서 `Postgres`라고도 부름
+- 1986년 UC 버클리의 POSTGRES 프로젝트에서 시작, 특정 회사가 아닌 커뮤니티가 개발
+- SQL 표준을 충실하게 따르고, 기능이 풍부해 "가장 진보된 오픈소스 DB"라고 소개됨
+- 기본 포트: `5432`
+- NestJS 강의에서 Docker로 직접 띄워본 내용은 [Docker Volume과 PostgreSQL](/devops/docker/08-volume-postgresql), [pgAdmin](/backend/nestjs/14-pgadmin) 참고
+
+---
+
+## 2. 특징
+
+- `MVCC(다중 버전 동시성 제어)`: 읽기와 쓰기가 서로를 막지 않아 동시 처리 성능이 좋음
+- `풍부한 타입`: `JSONB`, 배열, `UUID`, 범위(range), 위치 정보 등
+  - `JSONB`로 문서형 데이터도 인덱스를 걸어 빠르게 검색 가능
+- `확장(Extension)`: 기능을 플러그인처럼 추가
+  - `PostGIS`(지도·위치), `pgvector`(벡터 검색), `pg_trgm`(유사 문자열 검색) 등
+- `고급 SQL`: 윈도우 함수, CTE(`WITH`), `RETURNING`, 부분 인덱스 등
+- Supabase, Neon, AWS RDS/Aurora 등 많은 클라우드 서비스가 Postgres 기반
+
+---
+
+## 3. MySQL과 비교
+
+| 구분          | MySQL                    | PostgreSQL                     |
+| ------------- | ------------------------ | ------------------------------ |
+| 성격          | 단순·빠른 읽기에 강점    | 복잡한 쿼리·표준 준수에 강점   |
+| JSON          | `JSON` 타입              | `JSON`, `JSONB`(인덱스 가능)   |
+| 확장성        | 스토리지 엔진 선택       | Extension으로 기능 추가        |
+| 자동 증가 키  | `AUTO_INCREMENT`         | `GENERATED ... AS IDENTITY`    |
+| 라이선스      | GPL (Oracle 소유)        | PostgreSQL License (자유로움)  |
+
+---
+
+## 4. Docker로 실행하기
+
+```bash
+docker run -d --name postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=비밀번호 \
+  -e POSTGRES_DB=mydb \
+  -p 5432:5432 \
+  -v pg_data:/var/lib/postgresql/data \
+  postgres:16
+```
+
+```bash
+# psql(명령줄 클라이언트)로 접속
+docker exec -it postgres psql -U postgres -d mydb
+```
+
+---
+
+## 5. psql 자주 쓰는 명령어
+
+```txt
+\l          데이터베이스 목록
+\c mydb     데이터베이스 이동
+\dt         테이블 목록
+\d users    테이블 구조 보기
+\du         사용자(Role) 목록
+\q          종료
+```
+
+---
+
+## 6. 기본 SQL
+
+```sql
+CREATE TABLE users (
+  id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email      TEXT NOT NULL UNIQUE,
+  profile    JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RETURNING: 추가·수정한 행을 바로 돌려받음
+INSERT INTO users (email, profile)
+VALUES ('a@test.com', '{"nickname": "철수", "tags": ["dev"]}')
+RETURNING id;
+
+-- JSONB 조회: ->> 는 텍스트로, @> 는 포함 여부
+SELECT email, profile->>'nickname' AS nickname
+FROM users
+WHERE profile @> '{"tags": ["dev"]}';
+```
+
+- 시간은 타임존 정보가 있는 `TIMESTAMPTZ` 사용을 권장
+
+---
+
+## 7. Node.js에서 사용하기
+
+```bash
+npm i pg
+```
+
+```ts
+import { Pool } from 'pg'
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+
+// $1, $2 ... 로 값을 바인딩
+const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [1])
+```
+
+---
+
+## [참고]
+
+- https://www.postgresql.org/docs/
+- https://hub.docker.com/_/postgres

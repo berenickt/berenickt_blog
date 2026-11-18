@@ -1,5 +1,123 @@
 ---
 title: 'Jenkins'
+date: 2026/11/18
 tags: [DevOps, Jenkins]
 ---
 
+## 1. Jenkins란?
+
+- 빌드·테스트·배포를 자동화하는 오픈소스 **CI/CD 서버**
+  - `CI(지속적 통합)`: 코드를 push할 때마다 자동으로 빌드·테스트
+  - `CD(지속적 배포)`: 검증된 코드를 자동으로 서버에 배포
+- Java로 만들어졌으며, 2011년 Hudson 프로젝트에서 갈라져 나옴
+- 직접 서버에 설치해서 운영(Self-hosted)하는 방식
+  - 반대로 GitHub Actions처럼 서비스가 실행 환경을 제공하는 방식도 있음
+
+---
+
+## 2. 특징
+
+- `플러그인`: 1,800개가 넘는 플러그인으로 Git, Docker, Slack, AWS 등과 연동
+- `Pipeline as Code`: 빌드 과정을 `Jenkinsfile`로 코드처럼 저장소에서 관리
+- `분산 빌드`: Controller(관리 서버)가 여러 Agent(작업 서버)에 빌드를 나눠서 실행
+- 단점: 서버를 직접 운영·업데이트해야 하고, 플러그인 버전 관리가 번거로움
+
+| 구분        | Jenkins                  | GitHub Actions                |
+| ----------- | ------------------------ | ----------------------------- |
+| 실행 환경   | 직접 운영하는 서버       | GitHub가 제공 (자체 서버도 가능) |
+| 설정 파일   | `Jenkinsfile` (Groovy)   | `.github/workflows/*.yml`     |
+| 장점        | 자유도·확장성, 사내망 배포 | 설치 불필요, GitHub와 밀착     |
+
+---
+
+## 3. Docker로 실행하기
+
+```bash
+docker run -d --name jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+```
+
+- `8080`: 웹 화면, `50000`: Agent 연결용 포트
+- `http://localhost:8080` 접속 후 처음 화면에서 관리자 비밀번호를 입력
+
+```bash
+# 초기 관리자 비밀번호 확인
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+- 이후 "Install suggested plugins" → 관리자 계정 생성 순서로 진행
+
+---
+
+## 4. 주요 용어
+
+- `Job(Item)`: Jenkins가 실행하는 작업 단위
+- `Build`: Job을 한 번 실행한 것 (#1, #2 ... 번호가 붙음)
+- `Pipeline`: 여러 단계(Stage)로 이루어진 Job
+- `Stage` / `Step`: 파이프라인의 단계 / 단계 안의 실제 명령
+- `Workspace`: 빌드할 때 소스 코드를 받아두는 작업 폴더
+- `Credentials`: Git 토큰, 서버 SSH 키 등 비밀 정보를 안전하게 보관하는 곳
+
+---
+
+## 5. Jenkinsfile 예시
+
+```groovy
+pipeline {
+  agent any
+
+  environment {
+    NODE_ENV = 'production'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/사용자/저장소.git'
+      }
+    }
+    stage('Install') {
+      steps {
+        sh 'npm ci'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'npm test'
+      }
+    }
+    stage('Build & Deploy') {
+      when { branch 'main' }
+      steps {
+        sh 'npm run build'
+        sh 'docker build -t my-app .'
+      }
+    }
+  }
+
+  post {
+    success { echo '배포 성공' }
+    failure { echo '빌드 실패' }
+  }
+}
+```
+
+- 저장소 루트에 `Jenkinsfile`을 두고, Jenkins에서 Pipeline Job을 만들어 "Pipeline script from SCM"을 선택
+
+---
+
+## 6. 빌드를 자동으로 실행하는 방법
+
+- `GitHub Webhook`: push가 일어나면 GitHub가 Jenkins에 알림 → 즉시 빌드
+  - GitHub 저장소 Settings → Webhooks → `http://젠킨스주소/github-webhook/`
+- `Poll SCM`: 정해진 주기마다 저장소에 변경이 있는지 확인
+- `Build periodically`: cron 문법으로 정해진 시간에 빌드 (예: `H 2 * * *` 매일 새벽 2시)
+
+---
+
+## [참고]
+
+- https://www.jenkins.io/doc/
+- https://www.jenkins.io/doc/book/pipeline/syntax/

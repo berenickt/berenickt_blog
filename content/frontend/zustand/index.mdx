@@ -1,5 +1,150 @@
 ---
 title: 'Zustand'
+date: 2026/11/18
 tags: [Frontend, Zustand]
 ---
 
+## 1. Zustand란?
+
+- React용 **전역 상태 관리 라이브러리**
+  - 독일어로 "상태(state)"라는 뜻
+- Redux보다 훨씬 적은 코드로, Hook 하나로 상태를 만들고 사용
+- 번들 크기가 매우 작고(약 1KB), Provider로 앱을 감쌀 필요가 없음
+- 다른 상태 관리 도구는 [Redux Toolkit](/frontend/redux-toolkit/01-redux-toolkit), [Recoil](/frontend/recoil) 참고
+
+---
+
+## 2. 특징
+
+- `간단한 API`: `create` 함수 하나로 스토어 생성
+- `Provider 불필요`: 스토어가 컴포넌트 밖에 존재해 어디서든 바로 import해서 사용
+- `선택적 구독`: 컴포넌트가 필요한 값만 골라 구독 → 그 값이 바뀔 때만 리렌더링
+- `React 밖에서도 사용 가능`: `getState()`, `setState()`로 일반 함수에서도 접근
+- `미들웨어`: `persist`(localStorage 저장), `devtools`(Redux DevTools 연결) 등
+
+| 구분        | Redux Toolkit                     | Zustand                    |
+| ----------- | --------------------------------- | -------------------------- |
+| 설정        | store, slice, Provider 필요       | `create` 하나              |
+| 코드량      | 많음                              | 적음                       |
+| 적합한 경우 | 큰 팀, 엄격한 구조가 필요할 때    | 작고 빠르게 만들 때        |
+
+---
+
+## 3. 설치
+
+```bash
+npm i zustand
+```
+
+---
+
+## 4. 기본 사용법
+
+```ts
+// stores/counter.ts
+import { create } from 'zustand'
+
+type CounterState = {
+  count: number
+  increase: () => void
+  reset: () => void
+}
+
+export const useCounterStore = create<CounterState>()(set => ({
+  count: 0,
+  increase: () => set(state => ({ count: state.count + 1 })),
+  reset: () => set({ count: 0 }),
+}))
+```
+
+```tsx
+// 컴포넌트에서 사용
+import { useCounterStore } from './stores/counter'
+
+function Counter() {
+  // 필요한 값만 골라서 구독 (selector)
+  const count = useCounterStore(state => state.count)
+  const increase = useCounterStore(state => state.increase)
+
+  return <button onClick={increase}>{count}</button>
+}
+```
+
+- `set`은 전달한 객체를 기존 상태와 **얕게 병합**함 (`count`만 바꿔도 나머지 값은 유지)
+- TypeScript에서는 `create<타입>()(...)`처럼 괄호를 한 번 더 쓰는 형태를 권장
+
+---
+
+## 5. 여러 값을 한 번에 꺼낼 때
+
+```tsx
+import { useShallow } from 'zustand/react/shallow'
+
+const { count, reset } = useCounterStore(
+  useShallow(state => ({ count: state.count, reset: state.reset })),
+)
+```
+
+- selector가 매번 새 객체를 반환하면 불필요한 리렌더링(또는 무한 루프)이 생길 수 있음
+- `useShallow`로 감싸면 값이 실제로 바뀌었을 때만 리렌더링
+
+---
+
+## 6. 비동기 액션
+
+```ts
+type UserState = {
+  user: User | null
+  loading: boolean
+  fetchUser: (id: number) => Promise<void>
+}
+
+export const useUserStore = create<UserState>()(set => ({
+  user: null,
+  loading: false,
+  fetchUser: async id => {
+    set({ loading: true })
+    const user = await fetch(`/api/users/${id}`).then(r => r.json())
+    set({ user, loading: false })
+  },
+}))
+```
+
+- 별도 미들웨어 없이 액션 안에서 바로 `async/await` 사용 가능
+- 서버 데이터 캐싱이 주 목적이라면 [TanStack Query](/frontend/tanstack-query/00-summary)와 역할을 나눠서 사용하는 것이 좋음
+
+---
+
+## 7. 미들웨어: persist, devtools
+
+```ts
+import { create } from 'zustand'
+import { persist, devtools } from 'zustand/middleware'
+
+type ThemeState = {
+  theme: 'light' | 'dark'
+  toggle: () => void
+}
+
+export const useThemeStore = create<ThemeState>()(
+  devtools(
+    persist(
+      set => ({
+        theme: 'light',
+        toggle: () => set(s => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
+      }),
+      { name: 'theme-storage' }, // localStorage 키 이름
+    ),
+  ),
+)
+```
+
+- `persist`: 새로고침해도 상태가 유지되도록 localStorage에 저장
+- `devtools`: 브라우저의 Redux DevTools에서 상태 변화를 확인
+
+---
+
+## [참고]
+
+- https://zustand.docs.pmnd.rs/
+- https://github.com/pmndrs/zustand
