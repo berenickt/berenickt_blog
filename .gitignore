@@ -6,3 +6,6 @@ public/_pagefind
 
 # 글별 마지막 수정일 (predev/prebuild 시 생성)
 .generated
+
+# macOS Finder가 자동으로 만드는 폴더 표시 설정 파일
+.DS_Store
