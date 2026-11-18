@@ -1,6 +1,7 @@
 import nextra from 'nextra'
 import { remarkCodeHike, recmaCodeHike } from 'codehike/mdx'
 import { remarkCodeLang } from './lib/remark-code-lang.mjs'
+import { remarkCallout } from './lib/remark-callout.mjs'
 
 /** @type {import('codehike/mdx').CodeHikeConfig} */
 const chConfig = {
@@ -19,7 +20,7 @@ const withNextra = nextra({
   search: { codeblocks: false },
   mdxOptions: {
     // remarkCodeLang 이 먼저 돌아 Code Hike 가 모르는 언어를 정리한다.
-    remarkPlugins: [remarkCodeLang, [remarkCodeHike, chConfig]],
+    remarkPlugins: [remarkCallout, remarkCodeLang, [remarkCodeHike, chConfig]],
     recmaPlugins: [[recmaCodeHike, chConfig]],
   },
 })

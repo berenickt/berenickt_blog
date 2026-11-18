@@ -7,6 +7,7 @@ import { getPageMap } from 'nextra/page-map'
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import 'nextra-theme-docs/style.css'
 import './globals.css'
+import { AutoHideHeader } from '../components/auto-hide-header'
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -56,14 +57,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang='ko' dir='ltr' suppressHydrationWarning className={jetbrainsMono.variable}>
       <Head
-        // 브랜드 컬러: 인디고/바이올렛 계열
+        // 브랜드 컬러: Claude 오렌지(클레이, #d97757) 계열
         color={{
-          hue: { light: 250, dark: 252 },
-          saturation: { light: 75, dark: 85 },
-          lightness: { light: 52, dark: 70 },
+          hue: { light: 15, dark: 18 },
+          saturation: { light: 63, dark: 72 },
+          lightness: { light: 52, dark: 66 },
         }}
+        // 라이트 모드 배경: Claude 아이보리 (다크 모드는 기본값 유지)
+        backgroundColor={{ light: '#faf9f5', dark: 'rgb(17,17,17)' }}
       />
       <body>
+        <AutoHideHeader />
         <Layout
           navbar={navbar}
           footer={footer}
