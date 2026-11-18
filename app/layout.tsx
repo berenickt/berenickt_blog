@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { JetBrains_Mono } from 'next/font/google'
-import { Footer, Layout, Navbar } from 'nextra-theme-docs'
+import { Layout, Navbar } from 'nextra-theme-docs'
 import { Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import 'nextra-theme-docs/style.css'
 import './globals.css'
 import { AutoHideHeader } from '../components/auto-hide-header'
+import { ThemeToggle } from '../components/theme-toggle'
+import { SidebarQuickLinks } from '../components/sidebar-quick-links'
+import { SiteFooter } from '../components/site-footer'
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -35,23 +38,13 @@ const logo = (
   </span>
 )
 
-const navbar = <Navbar logo={logo} projectLink='https://github.com/berenickt' />
-
-const footer = (
-  <Footer>
-    <div className='flex w-full flex-col items-center gap-1 text-sm sm:flex-row sm:justify-between'>
-      <span>Berenickt Dev Blog © 2022 ~ {new Date().getFullYear()}</span>
-      <a
-        href='https://github.com/berenickt'
-        target='_blank'
-        rel='noreferrer'
-        className='hover:text-[var(--x-color-primary-600)]'
-      >
-        GitHub ↗
-      </a>
-    </div>
-  </Footer>
+const navbar = (
+  <Navbar logo={logo} projectLink='https://github.com/berenickt'>
+    <ThemeToggle />
+  </Navbar>
 )
+
+const footer = <SiteFooter />
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -68,6 +61,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       />
       <body>
         <AutoHideHeader />
+        <SidebarQuickLinks />
         <Layout
           navbar={navbar}
           footer={footer}
@@ -75,6 +69,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           search={<Search placeholder='검색어를 입력해주세요.' />}
           navigation={{ prev: true, next: true }}
           sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
+          // 테마 전환은 헤더의 ThemeToggle 이 담당 (사이드바 하단 기본 선택기 숨김)
+          darkMode={false}
           toc={{ backToTop: '맨 위로', title: '목차' }}
           editLink={null}
           feedback={{ content: null }}

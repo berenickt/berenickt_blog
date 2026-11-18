@@ -514,7 +514,7 @@ main table {
 @media (min-width: 768px) {
   .nextra-navbar nav {
     position: relative;
-    --nav-side: 8rem;
+    --nav-side: 10.5rem;
   }
 
   .nextra-navbar nav > a:first-child + div {
@@ -609,6 +609,82 @@ html.header-hidden .nextra-navbar:not(:focus-within) {
   background-color: var(--x-color-nextra-bg, #fff);
 }
 
+/* 헤더 라이트/다크 모드 전환 버튼 (components/theme-toggle.tsx) */
+.theme-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.theme-toggle:hover {
+  background-color: rgb(0 0 0 / 0.05);
+}
+
+.dark .theme-toggle:hover {
+  background-color: rgb(255 255 255 / 0.1);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--x-color-primary-500);
+  outline-offset: 2px;
+}
+
+/*
+ * 해·달 아이콘을 겹쳐 두고 현재 모드 것만 보이게 한다.
+ * 바뀔 때 해는 돌며 작아지고, 달은 반대로 돌며 나타난다.
+ */
+.theme-toggle > svg {
+  grid-area: 1 / 1;
+  width: 1.2rem;
+  height: 1.2rem;
+  transition:
+    opacity 0.25s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle-light {
+  color: var(--x-color-primary-600);
+}
+
+.theme-toggle-dark {
+  color: hsl(42 95% 72%);
+}
+
+.theme-toggle-dark,
+.dark .theme-toggle-light {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+}
+
+.dark .theme-toggle-light {
+  transform: rotate(90deg) scale(0.4);
+}
+
+.dark .theme-toggle-dark {
+  opacity: 1;
+  transform: none;
+}
+
+/* hover 시 해는 살짝 돌고, 달은 살짝 기운다 */
+html:not(.dark) .theme-toggle:hover .theme-toggle-light {
+  transform: rotate(45deg);
+}
+
+.dark .theme-toggle:hover .theme-toggle-dark {
+  transform: rotate(-15deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle > svg {
+    transition: none;
+  }
+}
+
 /* 단축키 안내(⌘K) 숨김 — 단축키 자체는 그대로 동작 */
 .nextra-navbar .nextra-search kbd {
   display: none;
@@ -617,6 +693,160 @@ html.header-hidden .nextra-navbar:not(:focus-within) {
 /* ───────────── 사이드바 / 목차 ───────────── */
 .nextra-sidebar {
   font-size: 0.9rem;
+}
+
+/*
+ * 사이드바 폴더 영역 색 구분
+ * - Nextra 가 펼친 폴더 li 에 .open 을 붙이고, 하위 목록 ul(.x:ms-3)의 왼쪽 안내선을 ::before 로 그린다.
+ * - 펼친 폴더 영역에 옅은 배경 + 색 있는 안내선을 깔고, 단계(1·2·3)마다 색을 바꾼다.
+ * - 폴더 제목(화살표가 있는 항목)은 굵게 해서 일반 페이지 링크와 구분한다.
+ */
+aside.nextra-sidebar li {
+  --tree: var(--x-color-primary-500); /* 1단계: 포인트 컬러(오렌지) */
+}
+
+aside.nextra-sidebar li.open li {
+  --tree: #0d9488; /* 2단계: 청록 */
+}
+
+aside.nextra-sidebar li.open li.open li {
+  --tree: #7c3aed; /* 3단계: 보라 */
+}
+
+/* 폴더 제목 (화살표 아이콘이 있는 항목) */
+aside.nextra-sidebar li > :is(a, button):has(> svg) {
+  font-weight: 600;
+}
+
+/* 펼친 폴더 영역 */
+aside.nextra-sidebar li.open {
+  padding-bottom: 0.3rem;
+  border-radius: 0.6rem;
+  background: color-mix(in oklab, var(--tree) 6%, transparent);
+  transition: background-color 0.2s;
+}
+
+aside.nextra-sidebar li.open > :is(a, button):has(> svg) {
+  color: color-mix(in oklab, var(--tree) 75%, var(--x-color-gray-900));
+}
+
+.dark aside.nextra-sidebar li.open {
+  background: color-mix(in oklab, var(--tree) 9%, transparent);
+}
+
+.dark aside.nextra-sidebar li.open > :is(a, button):has(> svg) {
+  color: color-mix(in oklab, var(--tree) 60%, white);
+}
+
+/* 펼친 폴더 화살표 */
+aside.nextra-sidebar li.open > :is(a, button) > svg {
+  color: var(--tree);
+}
+
+/* 하위 목록 왼쪽 안내선 */
+aside.nextra-sidebar li.open > div ul.x\:ms-3::before {
+  width: 2px;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--tree) 45%, transparent);
+}
+
+/* 안쪽 펼친 폴더는 바깥 폴더 배경 위에 겹치므로 살짝 더 진하게 */
+aside.nextra-sidebar li.open li.open {
+  background: color-mix(in oklab, var(--tree) 8%, transparent);
+}
+
+/*
+ * 데스크톱 사이드바 맨 위 아이콘 줄: [전체 글] [태그] ······ [사이드바 접기]
+ * - 접기 버튼이 있는 Nextra footer(.nextra-sidebar-footer)를 맨 위로 올리고,
+ *   components/sidebar-quick-links.tsx 가 그 안에 전체 글·태그 아이콘 링크를 끼워 넣는다.
+ * - 구조: aside.nextra-sidebar(flex column) > [스크롤 영역] + [footer > .sidebar-quick-links + button[aria-controls]]
+ */
+.nextra-sidebar-footer {
+  order: -1;
+  position: static;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding: 0.75rem 0 0.6rem;
+  border-top: none;
+  border-bottom: 1px solid color-mix(in oklab, currentColor 8%, transparent);
+}
+
+.sidebar-quick-links {
+  order: -1; /* portal 은 접기 버튼 뒤에 붙으므로 앞으로 */
+  display: flex;
+  gap: 0.25rem;
+  margin-inline-end: auto; /* 접기 버튼은 오른쪽 끝으로 */
+}
+
+/* 아이콘 버튼 공통 (전체 글·태그 링크 + Nextra 접기 버튼) */
+.sidebar-icon-button,
+.nextra-sidebar-footer > button[aria-controls] {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border-radius: 0.6rem;
+  color: var(--x-color-gray-500);
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+}
+
+.sidebar-icon-button > svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.nextra-sidebar-footer > button[aria-controls] > svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.sidebar-icon-button:hover,
+.nextra-sidebar-footer > button[aria-controls]:hover {
+  color: var(--x-color-primary-600);
+  background: color-mix(in oklab, var(--x-color-primary-500) 10%, transparent);
+}
+
+.dark .sidebar-icon-button,
+.dark .nextra-sidebar-footer > button[aria-controls] {
+  color: var(--x-color-gray-400);
+}
+
+.dark .sidebar-icon-button:hover,
+.dark .nextra-sidebar-footer > button[aria-controls]:hover,
+.dark .sidebar-icon-button[aria-current='page'] {
+  color: var(--x-color-primary-400);
+}
+
+/* 현재 보고 있는 페이지(/posts, /tags) */
+.sidebar-icon-button[aria-current='page'] {
+  color: var(--x-color-primary-600);
+  background: color-mix(in oklab, var(--x-color-primary-500) 12%, transparent);
+}
+
+.sidebar-icon-button:focus-visible,
+.nextra-sidebar-footer > button[aria-controls]:focus-visible {
+  outline: 2px solid var(--x-color-primary-500);
+  outline-offset: 1px;
+}
+
+/* 사이드바 목록의 원래 '전체 글'·'태그' 항목은 데스크톱 사이드바에서만 숨김 (위 아이콘으로 대체) */
+aside.nextra-sidebar li:has(> a[href='/posts']),
+aside.nextra-sidebar li:has(> a[href='/tags']) {
+  display: none;
+}
+
+/* 접힌 사이드바: 좁은 폭에 맞춰 세로로 쌓기 */
+.nextra-sidebar-footer:has(> button[aria-expanded='false']) {
+  flex-direction: column;
+  align-items: center;
+}
+
+.nextra-sidebar-footer:has(> button[aria-expanded='false']) > .sidebar-quick-links {
+  flex-direction: column;
+  margin-inline-end: 0;
 }
 
 /* ───────────── 홈 화면 히어로 ───────────── */
@@ -1007,5 +1237,132 @@ article > .nextra-border.x\:print\:hidden > a.x\:ms-auto:hover > svg {
 
   article > .nextra-border.x\:print\:hidden > a {
     max-width: none;
+  }
+}
+
+/* ───────────── 푸터 (components/site-footer.tsx) ───────────── */
+/*
+ * Nextra Footer 구조: div(회색 배경) > [hr] + footer.site-footer
+ * 바깥 배경은 본문과 같은 색으로 두고, 위쪽 구분선만 남긴다.
+ */
+div:has(> footer.site-footer) {
+  background: transparent;
+}
+
+div:has(> footer.site-footer) > hr {
+  border-color: color-mix(in oklab, currentColor 10%, transparent);
+}
+
+footer.site-footer {
+  display: block;
+  padding-top: 2.75rem;
+  padding-bottom: 2.25rem;
+  font-size: 0.9rem;
+  color: var(--x-color-gray-600);
+}
+
+.dark footer.site-footer {
+  color: var(--x-color-gray-400);
+}
+
+.site-footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.site-footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+}
+
+.site-footer-brand {
+  max-width: 26rem;
+}
+
+.site-footer-logo {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--x-color-gray-900);
+}
+
+.dark .site-footer-logo {
+  color: var(--x-color-gray-100);
+}
+
+.site-footer-logo span {
+  color: var(--x-color-primary-600);
+}
+
+.site-footer-brand p {
+  margin-top: 0.5rem;
+  line-height: 1.65;
+  white-space: normal;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.site-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid color-mix(in oklab, currentColor 14%, transparent);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.site-footer-links svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.site-footer-links a:hover {
+  color: var(--x-color-primary-600);
+  border-color: color-mix(in oklab, var(--x-color-primary-500) 50%, transparent);
+  background: color-mix(in oklab, var(--x-color-primary-500) 8%, transparent);
+}
+
+.dark .site-footer-links a:hover {
+  color: var(--x-color-primary-400);
+}
+
+.site-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed color-mix(in oklab, currentColor 14%, transparent);
+  font-size: 0.8rem;
+  color: var(--x-color-gray-500);
+}
+
+.site-footer-bottom a {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+}
+
+.site-footer-bottom a:hover {
+  color: var(--x-color-primary-600);
+}
+
+@media (max-width: 640px) {
+  .site-footer-top {
+    flex-direction: column;
   }
 }
