@@ -538,8 +538,28 @@ html.header-hidden .nextra-navbar:not(:focus-within) {
   transform: translateY(-100%);
 }
 
+/*
+ * 헤더가 숨으면 좌측 사이드바와 목차도 그만큼 위로 붙인다.
+ * 둘 다 sticky top·높이를 --nextra-navbar-height 로 계산하므로, 이 두 요소에서만 변수를 0 으로 바꾼다.
+ * (헤더가 검색창 포커스로 남아 있을 때는 그대로 둔다)
+ */
+aside.nextra-sidebar,
+.nextra-toc > :first-child {
+  transition:
+    width 0.15s ease-in-out,
+    top 0.25s ease,
+    height 0.25s ease,
+    max-height 0.25s ease;
+}
+
+html.header-hidden:not(:has(.nextra-navbar:focus-within)) :is(aside.nextra-sidebar, .nextra-toc > :first-child) {
+  --nextra-navbar-height: 0px;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .nextra-navbar {
+  .nextra-navbar,
+  aside.nextra-sidebar,
+  .nextra-toc > :first-child {
     transition: none;
   }
 }
