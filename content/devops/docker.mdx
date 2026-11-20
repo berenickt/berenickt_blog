@@ -1,0 +1,251 @@
+---
+title: 'Docker 한눈에 보기'
+date: 2026/11/20
+tags: [DevOps, Docker]
+---
+
+## 1. Docker란?
+
+**Docker** 는 애플리케이션과 그 실행에 필요한 모든 것(OS 라이브러리, 런타임, 코드, 설정)을 **이미지** 라는 하나의 묶음으로 만들고,
+그 이미지를 **어디서나 똑같이 실행(컨테이너)** 해 주는 도구다.
+
+> 💡 비유하면 Docker 이미지는 **코드 밀키트** 다.
+> 재료(OS, 프로그램, 코드)와 조리법(실행 방법)을 한 봉지에 담아 두면, 누가 어디서 조리해도 같은 요리(실행 환경)가 나온다.
+
+Docker가 해결한 문제
+
+- **"내 컴퓨터에선 되는데 서버에선 안 돼요"** : 개발·테스트·운영 환경을 똑같이 맞출 수 있다.
+- **복잡한 설치 과정** : DB, Redis 같은 프로그램을 명령어 한 줄로 띄우고 지운다.
+- **배포 자동화** : 이미지를 만들어 올리고(push), 서버는 받아서(pull) 실행만 하면 된다.
+- **마이크로서비스** : 서비스마다 다른 언어·버전을 써도 각자의 컨테이너에서 독립적으로 실행된다.
+
+---
+
+### 1.1 가상 머신(VM)과 컨테이너
+
+```
+가상 머신 (VM)                       컨테이너 (Docker)
+
+[App A] [App B] [App C]              [App A] [App B] [App C]
+[Lib  ] [Lib  ] [Lib  ]              [Lib  ] [Lib  ] [Lib  ]
+[Guest OS][Guest OS][Guest OS]       ───────────────────────
+───────────────────────              [ Docker Engine        ]
+[ Hypervisor           ]             [ Host OS (커널 공유)  ]
+[ Host OS / Hardware   ]             [ Hardware             ]
+
+→ VM은 앱마다 OS 전체를 따로 띄우고,
+  컨테이너는 하나의 OS 커널을 함께 쓰면서 앱만 격리한다.
+```
+
+| 구분          | 가상 머신 (VMware, VirtualBox 등)  | 컨테이너 (Docker)                       |
+| ------------- | ---------------------------------- | --------------------------------------- |
+| 가상화 대상   | 하드웨어 (OS 전체를 따로 실행)     | OS 수준 (호스트의 **리눅스 커널을 공유**) |
+| 크기          | 수 GB                              | 수십~수백 MB                            |
+| 시작 시간     | 수십 초~분                         | **수 초 이내**                          |
+| 격리 수준     | 강함 (OS가 완전히 분리)            | 상대적으로 약함 (커널 공유)             |
+| 용도          | 다른 OS 실행, 강한 격리가 필요할 때 | 애플리케이션 배포·실행                  |
+
+- 컨테이너는 리눅스 커널의 기능(**namespace** 로 격리, **cgroup** 으로 자원 제한)을 이용한다.
+- 그래서 macOS·Windows에서 Docker를 쓰면, 내부적으로 **작은 리눅스 VM** 을 띄우고 그 안에서 컨테이너를 실행한다. (Docker Desktop, OrbStack, WSL2 등)
+
+---
+
+## 2. 핵심 개념
+
+| 개념             | 설명                                                                   | 비유                     |
+| ---------------- | ---------------------------------------------------------------------- | ------------------------ |
+| **Dockerfile**   | 이미지를 만드는 **설계도**. 베이스 이미지, 설치할 것, 실행 명령을 적는다 | 레시피                   |
+| **Image**        | Dockerfile로 만든 **실행 환경 묶음** (읽기 전용, 레이어로 구성)        | 밀키트                   |
+| **Container**    | 이미지를 실행한 **인스턴스**. 하나의 이미지로 여러 컨테이너를 띄울 수 있다 | 조리 중인 요리         |
+| **Registry**     | 이미지를 저장·공유하는 곳 (Docker Hub, AWS ECR, GitHub Container Registry) | 밀키트 마트          |
+| **Volume**       | 컨테이너가 지워져도 **데이터를 유지** 하는 저장 공간                   | 외장 하드                |
+| **Network**      | 컨테이너끼리 이름으로 통신하게 연결                                    | 사내 전화망              |
+| **Docker Compose** | 여러 컨테이너(웹 서버 + DB + Redis…)를 **YAML 파일 하나로** 함께 실행 | 코스 요리 메뉴판      |
+
+```
+Dockerfile ──docker build──▶ Image ──docker run──▶ Container
+                               │
+                       docker push / pull
+                               │
+                           Registry
+```
+
+### 2.1 이미지 레이어와 캐시
+
+- Dockerfile의 명령(`FROM`, `RUN`, `COPY` …)마다 **레이어** 가 하나씩 쌓인다.
+- 바뀌지 않은 레이어는 **캐시를 재사용** 하므로, 자주 바뀌는 코드는 Dockerfile 아래쪽에 두면 빌드가 빨라진다.
+  - e.g. `package.json` 복사 → `npm ci` → 소스 코드 복사 순서 (→ [05-성능을 위한 Dockerfile 작성법](/devops/docker/05-dockerfile-advanced))
+
+---
+
+## 3. 예시로 보는 전체 흐름
+
+```dockerfile
+# Dockerfile (Node.js 서버)
+
+# 1. 베이스 이미지
+FROM node:22-alpine
+# 2. 작업 폴더
+WORKDIR /app
+# 3. 의존성 목록 먼저 복사 (캐시 활용)
+COPY package*.json ./
+# 4. 의존성 설치
+RUN npm ci
+# 5. 소스 코드 복사
+COPY . .
+# 6. root가 아닌 사용자로 실행 (보안)
+USER node
+# 7. 사용하는 포트 표시 (문서 용도)
+EXPOSE 3000
+# 8. 컨테이너 시작 시 실행할 명령
+CMD ["node", "server.js"]
+```
+
+> ⚠️ Dockerfile의 주석(`#`)은 **줄 맨 앞에서만** 인식된다. `FROM node:22 # 설명`처럼 명령 뒤에 붙이면 오류가 난다.
+
+```bash
+docker build -t my-server:v1 .               # 이미지 만들기
+docker run -d -p 8080:3000 --name web my-server:v1   # 컨테이너 실행 (내 컴퓨터 8080 → 컨테이너 3000)
+curl http://localhost:8080                   # 접속 확인
+```
+
+```yaml
+# docker-compose.yml (웹 서버 + PostgreSQL)
+services:
+  web:
+    build: .
+    ports:
+      - '8080:3000'
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/app   # 서비스 이름(db)으로 접속
+    depends_on:
+      - db
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: app
+    volumes:
+      - db-data:/var/lib/postgresql/data   # 데이터 유지
+
+volumes:
+  db-data:
+```
+
+```bash
+docker compose up -d      # 모두 실행
+docker compose logs -f    # 로그 보기
+docker compose down       # 모두 중지·삭제 (볼륨은 유지, 지우려면 -v)
+```
+
+---
+
+## 4. 자주 쓰는 명령어
+
+### 4.1 이미지
+
+| 명령어                                  | 설명                                    |
+| --------------------------------------- | --------------------------------------- |
+| `docker build -t 이름:태그 .`           | 현재 폴더의 Dockerfile로 이미지 만들기  |
+| `docker images`                         | 이미지 목록                             |
+| `docker pull 이미지:태그`               | 레지스트리에서 이미지 받기              |
+| `docker tag 이미지 새이름:태그`         | 이미지에 이름 붙이기 (push 전)          |
+| `docker push 이름:태그`                 | 레지스트리에 올리기                     |
+| `docker rmi 이미지`                     | 이미지 삭제                             |
+
+### 4.2 컨테이너
+
+| 명령어                                       | 설명                                            |
+| -------------------------------------------- | ----------------------------------------------- |
+| `docker run -d -p 호스트:컨테이너 --name 이름 이미지` | 백그라운드 실행, 포트 연결, 이름 지정  |
+| `docker ps` / `docker ps -a`                 | 실행 중인 컨테이너 / 중지된 것까지 모두         |
+| `docker logs -f 컨테이너`                    | 로그 실시간 보기                                |
+| `docker exec -it 컨테이너 sh`                | 실행 중인 컨테이너 안으로 들어가기              |
+| `docker stop 컨테이너` / `docker start 컨테이너` | 중지 / 다시 시작                            |
+| `docker rm 컨테이너`                         | 컨테이너 삭제 (`-f`로 실행 중이어도 강제 삭제)  |
+| `docker run --rm ...`                        | 종료되면 자동 삭제되는 일회용 컨테이너          |
+
+### 4.3 볼륨·네트워크·정리
+
+| 명령어                              | 설명                                                 |
+| ----------------------------------- | ---------------------------------------------------- |
+| `docker volume ls` / `create` / `rm` | 볼륨 목록 / 만들기 / 삭제                           |
+| `docker network ls` / `create`      | 네트워크 목록 / 만들기                               |
+| `docker system df`                  | Docker가 디스크를 얼마나 쓰는지 확인                 |
+| `docker system prune`               | 중지된 컨테이너, 안 쓰는 네트워크·이미지 정리 ⚠️      |
+
+> 💡 Docker Compose는 예전에는 `docker-compose`(하이픈) 명령이었지만, 지금은 Docker에 포함된 **`docker compose`**(띄어쓰기)를 쓴다.
+
+---
+
+## 5. 실무에서 알아 두면 좋은 것
+
+### 5.1 좋은 Dockerfile 작성 습관
+
+- **작은 베이스 이미지** : `node:22-alpine`, `-slim`, distroless 등 → 용량과 보안 취약점이 줄어든다.
+- **버전 고정** : `node:latest` 대신 `node:22-alpine`처럼 태그를 명시한다. (언제 빌드해도 같은 결과)
+- **멀티 스테이지 빌드** : 빌드 도구는 빌드 단계에서만 쓰고, 최종 이미지에는 실행에 필요한 것만 담는다.
+- **`.dockerignore`** : `node_modules`, `.git`, `.env` 등을 이미지에 넣지 않는다. (빌드 속도·보안)
+- **root로 실행하지 않기** : `USER` 명령으로 일반 사용자로 실행한다.
+- **컨테이너 하나 = 프로세스(역할) 하나** : 웹 서버와 DB를 한 컨테이너에 넣지 말고 나눈다.
+
+### 5.2 보안
+
+- **비밀 값을 이미지에 넣지 말자.** Dockerfile의 `ENV`, `COPY .env`로 넣은 값은 이미지를 받은 누구나 꺼내 볼 수 있다. → 실행 시 환경 변수·시크릿으로 주입
+- 이미지 취약점 스캔 : `docker scout`, Trivy
+- 공식 이미지(Docker Official Images)나 신뢰할 수 있는 이미지를 쓰자.
+
+### 5.3 Apple Silicon(M 시리즈) 맥 사용자 주의
+
+- 맥(arm64)에서 만든 이미지를 **x86(amd64) 서버** 에서 실행하면 `exec format error`가 날 수 있다.
+- 배포용 이미지는 서버 아키텍처에 맞춰 빌드하자.
+
+```bash
+docker buildx build --platform linux/amd64 -t my-server:v1 .
+# 두 아키텍처 모두 지원하는 이미지 : --platform linux/amd64,linux/arm64 --push
+```
+
+### 5.4 Docker 다음 단계 : 오케스트레이션
+
+- 컨테이너가 많아지고 서버가 여러 대가 되면, 컨테이너 배치·재시작·확장·무중단 배포를 자동으로 관리해 줄 도구가 필요하다.
+- **AWS ECS**, **Kubernetes**, Docker Swarm 등이 이 역할을 한다. → [10-Orchestration](/devops/docker/10-orchestration), [Kubernetes](/devops/kubernetes)
+
+### 5.5 Docker 대안과 도구
+
+| 도구                  | 설명                                                                 |
+| --------------------- | -------------------------------------------------------------------- |
+| **Docker Desktop**    | macOS·Windows용 공식 앱. 일정 규모 이상의 회사는 **유료 구독** 이 필요 |
+| **OrbStack**          | macOS용 가볍고 빠른 Docker 실행 환경                                 |
+| **Podman**            | 데몬 없이, root 권한 없이 실행하는 Docker 호환 도구 (레드햇)         |
+| **containerd**        | Docker와 Kubernetes 내부에서 실제로 컨테이너를 실행하는 런타임       |
+
+- 이미지 형식은 **OCI(Open Container Initiative) 표준** 이라, Docker로 만든 이미지를 Podman·Kubernetes에서도 그대로 쓸 수 있다.
+
+---
+
+## 6. 이 시리즈에서 배우는 것
+
+| 글                                                                          | 내용                                                         |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [01. Docker와 컨테이너 등장 배경](/devops/docker/01-intro)                   | 도커 이전의 문제, 컨테이너 개념, 설치                         |
+| [02. Docker로 띄워 볼 서버 만들기](/devops/docker/02-server)                 | 실습용 서버 만들기, 배포하려면 필요한 것                      |
+| [03. Dockerfile 명령어 & 이미지 만들기](/devops/docker/03-dockerfile)        | `FROM`, `RUN`, `COPY`, `CMD` 등, `docker build`              |
+| [04. 컨테이너 다루기](/devops/docker/04-container)                           | `docker run`, 포트 연결, 컨테이너 구조                        |
+| [05. 성능을 위한 Dockerfile 작성법](/devops/docker/05-dockerfile-advanced)   | 캐싱, `npm ci`, ENV, 권한 낮추기, Spring Boot·Next.js 예시    |
+| [06. Docker Hub, push, pull](/devops/docker/06-dockerhub-push-pull)          | 이미지 업로드·다운로드                                        |
+| [07. 네트워크와 Nginx 컨테이너](/devops/docker/07-network-nginx-container)   | Nginx 리버스 프록시, 컨테이너 간 통신                         |
+| [08. Volume과 PostgreSQL](/devops/docker/08-volume-postgresql)               | 볼륨으로 데이터 유지, bind mount, DB 컨테이너                 |
+| [09. Docker Compose](/devops/docker/09-docker-compose)                       | 여러 컨테이너를 한 번에, 실시간 개발, graceful shutdown       |
+| [10. Orchestration](/devops/docker/10-orchestration)                         | 태스크·서비스·클러스터, health check, 서비스 배포             |
+
+---
+
+## 참고
+
+- [Docker 공식 문서](https://docs.docker.com/)
+- [Dockerfile 레퍼런스](https://docs.docker.com/reference/dockerfile/)
+- [Dockerfile 모범 사례](https://docs.docker.com/build/building/best-practices/)
+- [Docker Compose 문서](https://docs.docker.com/compose/)
+- [Docker Hub](https://hub.docker.com/)
+- [Play with Docker](https://labs.play-with-docker.com/) : 브라우저에서 바로 Docker 실습
+- 이 블로그 : [Docker 치트시트](/memo/cheatsheet/cheatsheet-docker), [DevOps 로드맵](/devops)
