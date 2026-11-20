@@ -1,176 +1,342 @@
 ---
-title: 'Data Fetching 라이브러리'
+title: '상태 관리 라이브러리'
 date: 2023/03/10
 tags: [Frontend]
 ---
 
-## 1. State Management(상태관리)
+## 1. 상태(State)란?
 
-![React_14_2](https://raw.githubusercontent.com/berenickt/image-server/main/img/React_14_2.png)
+**상태 = 화면을 그리기 위해 기억해야 하는 값** 이다. React에서는 "컴포넌트의 메모리"라고도 부른다.
 
-**Context API** (리액트 기본 문법)
+- e.g. 모달이 열려 있는지, 입력창에 뭐라고 썼는지, 로그인한 사용자가 누구인지, 장바구니에 무엇이 있는지
 
-- props 전송없이 state 공유 가능
-- 2가지 문제 때문에 많이 쓰이지 않음
-  - state 변경시 쓸데없는 컴포넌트까지 전부 재렌더링되어 성능 이슈
-  - 컴포넌트 재활용이 어려움
-- Context API보다는 redux같은 외부 라이브러리를 많이 사용
+React는 **상태가 바뀌면 화면을 다시 그린다.**
+그래서 "상태를 어디에 두고, 누가 바꾸고, 바뀌었을 때 어디까지 다시 그릴지"가 곧 상태 관리다.
 
 ---
 
 ### 1.1 왜 상태 관리 도구가 필요한가?
 
-- React에서 State는 component 안에서 관리됨
-- 자식 컴포넌트들 간의 다이렉트 데이터 전달은 불가능
-- 자식 컴포넌트들 간의 데이터를 주고 받을 때는 상태를 관리하는 부모 컴포넌트를 통해서 주고 받음
-- 그런데 자식이 많아진다면 상태 관리가 매우 복잡해짐
-- **상태를 관리하는 상위 컴포넌트에서 계속 내려 받아야한다.** → `Props drilling` 이슈
-- 그래서 상태 관리의 복잡성을 해결해주는 라이브러리를 활용함
+![React_14_2](https://raw.githubusercontent.com/berenickt/image-server/main/img/React_14_2.png)
+
+- React에서 state는 **컴포넌트 안에서** 관리된다.
+- 형제 컴포넌트끼리는 데이터를 직접 주고받을 수 없어서, **공통 부모로 상태를 끌어올린 뒤(Lifting State Up)** props로 내려 준다.
+- 컴포넌트 트리가 깊어지면, 중간 컴포넌트들이 쓰지도 않는 props를 계속 전달해야 한다. → **Props Drilling**
+- 또 상태 변경 로직이 여러 컴포넌트에 흩어지면, 어디서 값이 바뀌었는지 추적하기 어려워진다.
+
+그래서 **컴포넌트 트리 밖에 상태를 두고, 필요한 컴포넌트가 직접 꺼내 쓰는 방법** 이 필요해졌고, 이게 전역 상태 관리 도구다.
 
 ---
 
-### 1.2 State Management 라이브러리 종류
+## 2. 상태를 나눠서 생각하기
 
-props 없이 state를 공유할 수 있게 도와주는 라이브러리들
+상태 관리 라이브러리를 고르기 전에 가장 먼저 할 일은, **그 상태가 어떤 종류인지 구분하는 것** 이다.
+예전에는 이 모든 걸 Redux 하나에 넣었기 때문에 복잡했다.
 
-- [Context API Docs](https://reactjs.org/docs/context.html)✅
-- [Recoil](https://recoiljs.org/)✅
-  - Context 만을 사용하여 글로벌 상태 관리를 하는 것이 어느정도 제한이 있어서,
-  - Meta 개발팀에서 이를 개선하기 위해 만든 상태 관리 라이브러리
-  - 공식적으로는 23/01 기준 experimental 단계
-- [Jotai](https://jotai.org/)✅
-  - Recoil과 비슷한 라이브러리
-  - Recoil이 공식적으로 experimental 단계라면, Jotai는 이미 stable한 라이브러리
-- [Redux Toolkit - Redux](https://redux-toolkit.js.org/)✅
-  - 옛날부터 써왔던 라이브러리라 사용자가 가장 많음
-  - [2022 통계](https://tsh.io/state-of-frontend/)에 따르면 약 48%의 개발자들이 리액트 프로젝트에서 리덕스 사용
-  - 그래서 유지보수를 하고 있는 프로젝트에서 리덕스를 사용중이기 때문이 확률이 큼
-  - Redux 만든사람이 Redux의 문제점을 인식하고, Redux를 개선한 Redux Toolkit을 만듬
-  - 리덕스는 리액트에 종속되는 라이브러리가 아님
-  - 다른 UI 라이브러리/프레임워크와 함께 사용 가능
-  - cf. [Velog - 리덕스(Redux)는 왜 쓰는 건데⁉](https://velog.io/@wooder2050/%EB%A6%AC%EB%8D%95%EC%8A%A4Redux%EB%8A%94-%EC%99%9C-%EC%93%B0%EB%8A%94-%EA%B1%B4%EB%8D%B0)
-  - cf. [Velog - Redux 어떻게 써야 잘 썼다고 소문이 날까?](https://velog.io/@velopert/using-redux-in-2021)
-  - cf. https://ko.redux.js.org/introduction/installation
-  - 리덕스의 문제점
-    - 보일러 플레이트가 많음
-      - 단순히 하나의 상태를 바꾸기 위해서 요청을 전달하는 action을 만들고,
-      - 상태를 바꿔주는 reducer를 만들고, 필요에 따라 middleware까지 만져야 함
-    - 특정 어플리케이션에서는 과한 기술일 수 있음
-      - 상태가 별로 없으면 props 쓰는 게 편함
-- [MobX](https://mobx.js.org/)
-  - 상태 관리 라이브러리
-  - React, Angular, Vue, Node.js 등 다양한 환경에서 사용 가능
-  - React에서 사용할 때는 MobX-react라는 라이브러리를 같이 사용
-  - Redux와 비교했을 때, 더 간단하게 사용 가능
-- [Zustand - Official Website](https://github.com/pmndrs/zustand)
-  - Zustand는 독일어로 상태라는 의미
+| 종류                 | 예시                                     | 어울리는 도구                                    |
+| -------------------- | ---------------------------------------- | ------------------------------------------------ |
+| 지역 상태            | 입력값, 드롭다운 열림 여부               | `useState`, `useReducer`                         |
+| 서버 상태            | 게시글 목록, 사용자 프로필               | TanStack Query, SWR, 서버 컴포넌트               |
+| URL 상태             | 검색어, 필터, 정렬, 페이지 번호          | 검색 파라미터 (`?q=react&page=2`), nuqs          |
+| 폼 상태              | 회원가입 폼 값, 유효성 검사 결과         | React Hook Form + Zod, `useActionState`          |
+| **전역 클라이언트 상태** | 테마, 사이드바 열림, 장바구니, 에디터 상태 | Context, **Zustand**, Jotai, Redux Toolkit 등 |
+
+원칙
+
+1. **가능한 한 가까운 곳에 둔다.** 처음부터 전역에 넣지 말고, 여러 곳에서 필요해지면 그때 올린다.
+2. **서버 데이터는 전역 스토어에 복사하지 않는다.** 서버 상태 도구가 캐싱·동기화를 대신해 준다. → [Data Fetching 라이브러리](/frontend/data-fetching)
+3. **공유·새로고침 후에도 유지돼야 하는 값은 URL에** 둔다. (e.g. 검색 필터를 URL에 두면 링크로 공유할 수 있다)
+4. 이렇게 나누고 나면, **진짜 전역 클라이언트 상태는 생각보다 적다.** 그래서 요즘 라이브러리는 점점 가벼워지는 추세다.
 
 ---
 
-### 1.3 전역 상태 관리 라이브러리는 언제 쓰나?
+## 3. Context API
 
-- cf. [Velopert - Velog 리액트에서 Context API 잘 쓰는 법](https://velog.io/@velopert/react-context-tutorial)
-- 과거에는 리액트의 Context가 굉장히 불편해서 전역 상태 관리 라이브러리를 사용하는 것이 당연했음
-- 이제는 사용하기 편해져서 단순히 전역적인 상태를 관리하기 위함이라면 더 이상 사용해야 할 이유X
-- 단, 상태 관리 라이브러리는 상태 관리를 더욱 편하고, 효율적으로 할 수 있게 해주는 기능들을 제공해주는 도구임
-- e.g. Redux의 경우
+React에 내장된 기능으로, props 전달 없이 하위 컴포넌트에 값을 공유할 수 있다.
 
-  - 액션과 리듀서라는 개념을 사용하여 상태 업데이트 로직을 컴포넌트 밖으로 분리
-  - 상태가 업데이트 될 때 실제로 의존하는 값이 바뀔 때만 컴포넌트가 리렌더링 되도록 최적화
+```tsx
+const ThemeContext = createContext<'light' | 'dark'>('light')
 
-- e.g. MobX의 경우
+function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  return (
+    // React 19부터는 <ThemeContext.Provider> 대신 <ThemeContext>로 바로 쓸 수 있다
+    <ThemeContext value={theme}>
+      <Page />
+    </ThemeContext>
+  )
+}
 
-  - Redux와 마찬가지로 상태 업데이트 로직을 컴포넌트 밖으로 분리
-  - 함수형 리액티브 프로그래밍 방식을 도입하여 mutable한 상태가 리액트에 보이게 해줌
-  - 상태 업데이트 로직을 더욱 편하게 작성할 수 있게 해주며 최적화
+function Button() {
+  const theme = use(ThemeContext) // 또는 useContext(ThemeContext)
+  return <button className={theme}>버튼</button>
+}
+```
 
-- e.g. Recoil, Jotai, Zustand의 경우
-  - Context를 일일이 만드는 과정을 생략하고 Hook 기반으로 아주 편하게 전역 상태 관리
+**장점**
+
+- 설치가 필요 없고, React 공식 기능이다.
+- 테마, 로그인 사용자, 언어 설정처럼 **자주 바뀌지 않는 값** 을 공유하기에 딱 좋다.
+- 라이브러리나 디자인 시스템에서 "이 영역 안에서만 쓰는 값"을 전달할 때도 유용하다.
+
+**한계**
+
+- Context는 **상태 관리 도구가 아니라 "값 전달(의존성 주입)" 도구** 다. 상태 자체는 여전히 `useState`가 들고 있다.
+- Provider의 값이 바뀌면 그 Context를 쓰는 **모든 컴포넌트가 리렌더링** 된다. 객체의 일부만 쓰고 있어도 마찬가지다.
+  - 그래서 자주 바뀌는 값(e.g. 입력값, 마우스 위치)을 큰 Context에 넣으면 성능 문제가 생긴다.
+  - 해결 : Context를 용도별로 쪼개기, 값과 setter를 다른 Context로 분리하기
+  - React Compiler가 불필요한 리렌더링을 많이 줄여 주지만, Context 값이 바뀌어 생기는 리렌더링 자체는 막아 주지 않는다.
+- Provider가 많아지면 컴포넌트 트리가 Provider로 겹겹이 감싸지는 "Provider 지옥"이 생긴다.
+
+> 정리 : **자주 안 바뀌는 값 공유는 Context로 충분** 하다.
+> 자주 바뀌고, 여러 곳에서 읽고, 일부만 구독해야 하는 상태라면 전역 상태 라이브러리를 쓰는 게 낫다.
+
+cf. [React Context](/frontend/react/16-Context), [Velopert - 리액트에서 Context API 잘 쓰는 법](https://velog.io/@velopert/react-context-tutorial)
 
 ---
 
-### 1.4 MVC 패턴과 Flux 패턴
+## 4. 전역 상태 관리 라이브러리
 
-#### 1.4.1 MVC 패턴
+### 4.1 한눈에 비교
+
+| 라이브러리        | 방식               | 특징                                                         | 2026년 현재 상태          |
+| ----------------- | ------------------ | ------------------------------------------------------------ | ------------------------- |
+| **Zustand**       | Store(단방향)      | 훅 하나로 만드는 작은 스토어. 보일러플레이트가 거의 없음    | 가장 많이 선택됨 ✅        |
+| **Jotai**         | Atom(상향식)       | 작은 상태 조각(atom)을 조합. `useState`와 비슷한 사용감     | 활발히 사용 ✅             |
+| **Redux Toolkit** | Store(Flux)        | 엄격한 구조, 강력한 DevTools, 대규모 팀에 강함              | 기존 프로젝트에서 여전히 많음 |
+| MobX              | Observable(반응형) | 값을 직접 바꾸면(mutable) 알아서 반영. 클래스 기반 설계와 잘 맞음 | 꾸준히 사용              |
+| Valtio            | Proxy(반응형)      | 일반 객체처럼 직접 수정, 프록시가 변경 감지                 | 소규모로 사용             |
+| XState            | 상태 머신          | 복잡한 흐름(결제, 다단계 폼)을 상태와 전이로 명시적으로 정의 | 특수 목적                 |
+| ~~Recoil~~        | Atom               | 메타가 만든 실험적 라이브러리                               | **2025년 1월 저장소 아카이브(개발 중단)** |
+
+- Zustand, Jotai, Valtio는 모두 같은 오픈소스 그룹(**pmndrs**, 메인테이너 Daishi Kato)에서 만들었다. 방식만 다르다.
+  - Store가 하나 필요하다 → Zustand / 작은 상태를 조합하고 싶다 → Jotai / 객체를 그냥 바꾸고 싶다 → Valtio
+
+---
+
+### 4.2 Zustand
+
+> Zustand는 독일어로 "상태"라는 뜻이다.
+
+- 훅 형태의 스토어를 만들고, 컴포넌트에서 **필요한 값만 골라(selector) 구독** 한다.
+- Provider가 필요 없고, 컴포넌트 밖(일반 함수, 이벤트 핸들러)에서도 상태를 읽고 바꿀 수 있다.
+- Redux DevTools 연동, `persist`(로컬 스토리지 저장), `immer` 미들웨어 제공
+
+```ts
+import { create } from 'zustand'
+
+type CartState = {
+  items: string[]
+  add: (item: string) => void
+  clear: () => void
+}
+
+export const useCartStore = create<CartState>()(set => ({
+  items: [],
+  add: item => set(state => ({ items: [...state.items, item] })),
+  clear: () => set({ items: [] }),
+}))
+
+// 컴포넌트에서 — items가 바뀔 때만 리렌더링
+const items = useCartStore(state => state.items)
+const add = useCartStore(state => state.add)
+```
+
+- 주의 : selector에서 매번 새 객체를 만들어 반환하면 무한 리렌더링이 생길 수 있다. 여러 값을 한 번에 꺼낼 때는 `useShallow`를 쓴다.
+
+cf. [Zustand](/frontend/zustand)
+
+---
+
+### 4.3 Jotai
+
+- 상태를 **atom** 이라는 작은 단위로 만들고, 컴포넌트에서 `useAtom`으로 쓴다. `useState`를 전역으로 쓰는 느낌이다.
+- 다른 atom에서 값을 계산하는 **파생 atom** 을 만들 수 있고, 실제로 쓰는 atom이 바뀔 때만 리렌더링된다.
+- Recoil과 사용법이 비슷해서, Recoil을 쓰던 프로젝트의 대표적인 이전 대상이다.
+
+```ts
+import { atom, useAtom, useAtomValue } from 'jotai'
+
+const countAtom = atom(0)
+const doubleAtom = atom(get => get(countAtom) * 2) // 파생 atom
+
+function Counter() {
+  const [count, setCount] = useAtom(countAtom)
+  const double = useAtomValue(doubleAtom)
+  return <button onClick={() => setCount(c => c + 1)}>{count} / {double}</button>
+}
+```
+
+---
+
+### 4.4 Redux Toolkit
+
+- 2015년에 나온 Redux는 오랫동안 React 상태 관리의 표준이었다.
+- 하지만 하나의 상태를 바꾸려고 action type, action creator, reducer, (비동기면) middleware까지 만들어야 하는 **보일러플레이트** 가 문제였다.
+- 그래서 Redux 팀이 만든 공식 도구가 **Redux Toolkit(RTK)** 이며, 지금은 **순수 Redux 대신 RTK를 쓰는 것이 공식 권장** 이다.
+  - `createSlice` 하나로 action과 reducer를 함께 정의
+  - 내부에 Immer가 들어 있어서 `state.value += 1`처럼 직접 수정하는 문법을 써도 불변성이 지켜짐
+  - 서버 데이터는 **RTK Query** 로 처리
+- 장점 : 모든 변경이 action으로 기록되어 **추적과 디버깅(타임 트래블)** 이 강력하고, 규칙이 엄격해서 큰 팀에서도 코드가 일관된다.
+- 단점 : 작은 앱에는 여전히 과하다.
+- Redux는 React에 종속되지 않아서, 다른 UI 라이브러리와도 함께 쓸 수 있다.
+
+cf. [Redux Toolkit](/frontend/redux-toolkit/01-redux-toolkit), [Velopert - Redux 어떻게 써야 잘 썼다고 소문이 날까?](https://velog.io/@velopert/using-redux-in-2021)
+
+---
+
+### 4.5 MobX
+
+- **반응형(Observable)** 방식 : 상태를 관찰 가능한 값으로 만들고, 값을 **직접 수정** 하면 그 값을 쓰는 컴포넌트만 다시 그린다.
+- 클래스 기반으로 도메인 모델(스토어)을 설계하는 OOP 스타일과 잘 맞는다.
+- React에서는 `mobx-react-lite`의 `observer`로 컴포넌트를 감싸서 사용
+- React, Vue, Angular, Node.js 등 어디서나 사용 가능
+
+cf. [MobX](/frontend/mobx/01-mobx)
+
+---
+
+### 4.6 Recoil (개발 중단)
+
+- 메타 개발팀이 Context의 한계를 보완하려고 만든 atom 기반 라이브러리
+- 정식 버전(1.0) 없이 실험(experimental) 단계로 머물다가, **2025년 1월 GitHub 저장소가 아카이브** 되었다.
+- React 18 이후 버전과의 호환성 문제도 해결되지 않았으므로, **새 프로젝트에서는 쓰지 않는다.**
+- 기존 프로젝트는 사용법이 비슷한 **Jotai** 로 옮기는 경우가 많다.
+
+cf. [Recoil](/frontend/recoil)
+
+---
+
+## 5. 어떤 걸 골라야 할까?
+
+```
+이 상태는 서버에서 온 데이터인가?
+├─ YES → 상태 관리 라이브러리 X, TanStack Query / SWR / 서버 컴포넌트
+└─ NO
+   ├─ URL에 있어야 하는가? (공유·새로고침 유지) → 검색 파라미터
+   ├─ 한 컴포넌트(또는 가까운 부모)만 쓰는가? → useState / useReducer
+   ├─ 자주 안 바뀌고 여러 곳에서 읽는가? (테마, 로그인 사용자) → Context
+   └─ 자주 바뀌고 여러 곳에서 읽고 쓰는가?
+      ├─ 간단한 스토어가 필요 → Zustand ✅
+      ├─ 작은 상태들을 조합·파생 → Jotai
+      ├─ 큰 팀, 엄격한 규칙, 강력한 디버깅 → Redux Toolkit
+      ├─ 클래스 기반 도메인 모델 → MobX
+      └─ 상태 전이가 복잡한 흐름 → XState
+```
+
+> 대부분의 React 앱은 **TanStack Query(서버 상태) + Zustand 또는 Jotai(소량의 전역 상태) + URL·폼 상태** 조합이면 충분하다.
+
+---
+
+## 6. 상태 관리의 바탕이 되는 개념
+
+### 6.1 MVC 패턴
 
 ![react_19_1](https://raw.githubusercontent.com/berenickt/image-server/main/img/react_19_1.png)
 
 `MVC 패턴(Model-View-Controller)`
 
-- 데이터를 다루는 로직(Controller), 데이터(Model), 사용자 인터페이스(View)를 나누어
-  어플리케이션을 구현하는 하나의 개발 모델
-- Controller는 Model의 데이터를 조회하거나 업데이트하는 역할을 하며, Model의 변화는 View에 반영
+- 데이터(Model), 사용자 인터페이스(View), 데이터를 다루는 로직(Controller)을 나눠 앱을 구현하는 방식
+- Controller가 Model을 조회·변경하고, Model의 변화는 View에 반영된다.
 
----
-
-#### 1.4.2 MVC 패턴의 문제점
+#### MVC 패턴의 문제점
 
 ![react_19_2](https://raw.githubusercontent.com/berenickt/image-server/main/img/react_19_2.png)
 
-기존 MVC 패턴을 가진 대규모 애플리케이션에서 구조가 너무 복잡해지고 예측성이 떨어지는 문제점에 직면
-
-- MVC 구조는 앱이 커지면서 굉장히 복잡해졌다고 한다.
-- View가 다양한 상호작용을 위해 여러개의 Model을 동시에 업데이트하는 상황이 나타났기 때문
-
-이 문제를 해결하기 위해서는 **좀 더 예측 가능한 형태로 코드를 구조화하는 것**이 필요했고,
-
-- Facebook은 **React**와 **Flux**를 이용해서 그것을 달성하고자 했다고 한다.
+- 앱이 커지면서 **View가 여러 Model을 동시에 바꾸고, Model이 다시 다른 View를 바꾸는** 양방향 연결이 얽혔다.
+- 그 결과 "이 값이 왜, 어디서 바뀌었는지" 예측하기 어려워졌다.
+- 페이스북은 이 문제를 **데이터가 한 방향으로만 흐르게 하는 구조** 로 풀고자 했고, 그게 React와 Flux다.
 
 ---
 
-#### 1.4.3 Flux 패턴
+### 6.2 Flux 패턴
 
-`Flux 패턴` : 단방향 데이터 흐름을 가지는 패턴
+`Flux 패턴` : **단방향 데이터 흐름** 을 가지는 패턴 (2014년 페이스북 발표)
 
 ![react_19_3](https://raw.githubusercontent.com/berenickt/image-server/main/img/react_19_3.png)
 
+`Action → Dispatcher → Store → View → (사용자 입력) → Action ...`
+
 - `Action`
-  - 첫 흐름을 발생시키는 요소이며 Dispatcher에게 해당 액션 메시지를 보내줌
-  - **타입(type)**과 **데이터(payload)**를 가지고 있다
+  - 흐름을 시작하는 "무슨 일이 일어났는지"에 대한 메시지
+  - **타입(type)** 과 **데이터(payload)** 를 가진다.
 
 ```json
 {
-  "type": "EVENT_TYPE",
-  "data": {
-    "name": "Huurray"
-  }
+  "type": "cart/add",
+  "payload": { "id": 42, "name": "키보드" }
 }
 ```
 
 - `Dispatcher`
-  - **Flux의 모든 데이터 흐름을 관리**하는 **중앙허브**
-  - Store들이 등록해놓은 Action Type에 대한 맞춤 Callback이 있다.
-  - 그래서 Action이 넘어오면 Store들이 타입에 맞는 Store의 Callback을 실행하도록 해준다.
+  - **모든 Action을 받아 Store에 전달하는 중앙 허브**
 - `Store`
-  - **데이터**와 **데이터를 가공하는 로직**을 가지고 있다.
-  - Action이 넘어오면 등록된 Callback을 활용해 타입에 맞는 로직을 실행하고 데이터를 업데이트해준다.
-  - Store는 변경된 데이터를 View에게 알려주고,
-  - 자신의 컴포넌트 트리에 속해 있는 자식 노드 모두를 다시 랜더링하게 한다.
+  - **데이터** 와 **데이터를 바꾸는 로직** 을 가진다.
+  - Action을 받으면 타입에 맞는 로직으로 데이터를 바꾸고, 변경을 View에 알린다.
 - `View`
-  - Flux에서의 View는 MVC의 뷰와는 달리 화면을 보여주는것 외에도 **Controller**의 성격또한 가지고 있다.
-  - 최상위 View는 Store에서 데이터를 가져와 이를 자식 View 로 내려보내주는 역할을 하고 있다.
-  - 각 요소들은 단방향 흐름에서 순서대로 역할이 수행되고,
-  - 또 다시 새로운 데이터 변경이 있으면 처음부터 이 흐름이 다시 시작된다.
-  - 이렇게 하면 데이터 처리에 예외가 없다.
-  - Facebook은 이 Flux 패턴을 고안하고 View의 역할로 **React**를 이용했다.
+  - Store의 데이터를 받아 화면을 그리고, 사용자 입력이 생기면 다시 Action을 만든다.
+
+데이터가 항상 같은 방향으로만 흐르기 때문에, **상태 변화를 예측하고 추적하기 쉬워진다.**
+Redux는 Flux를 단순화해서 Dispatcher 대신 **하나의 Store와 순수 함수 reducer** 로 구현한 것이다.
+
+> 💡 지금의 라이브러리도 결국 같은 아이디어다.
+>
+> - Zustand : 스토어 하나 + 상태를 바꾸는 함수 (Flux를 아주 가볍게 만든 형태)
+> - Jotai : 아래에서 위로 조합하는 atom (Recoil 계열)
+> - MobX, Valtio, Signals : 값이 바뀌면 그 값을 쓰는 곳만 알아서 갱신 (반응형)
+>
+> 더 넓은 아키텍처 흐름은 [프론트엔드 역사와 미래](/frontend/front-architecture) 참고
 
 ---
 
-### 1.5 immutability(불변함)
+### 6.3 불변성(Immutability)
 
-- mutate = 변화하다
-- mutable = 변화 가능한
-- mutability = 변화가능함
-- immutability = 변화가능하지 않음
-  - 데이터의 원본이 훼손되는 것을 막는 것을 의미
+- mutate = 변화하다 / mutable = 변화 가능한 / **immutability = 변하지 않음**
+- 불변성 = **원본 데이터를 직접 바꾸지 않고, 바뀐 내용을 담은 새 데이터를 만드는 것**
 
-데이터의 CRUD(Create, Read, Update, Delete) 중에 중요한 건 Create, Read입니다.
-생성이 없다면 읽을 수 없음, 모든 정보는 존재하고 있다면, 생성과 읽기로 이루어짐.
-이를 `원본(origin)`이라고 함
+왜 React 상태에서 불변성이 중요할까?
 
-그 다음으로 중요한 건 수정과 삭제입니다. IT에서 수정과 삭제는 흔한 일이지만, 수정과 삭제가 안 되거나 힘든 시스템이 있습니다.
-e.g. 인쇄되어 배포된 종이책, 역사, 회계, 블록체인
+- React는 상태가 바뀌었는지를 **참조 비교(`Object.is`)** 로 판단한다.
+- 배열이나 객체를 직접 수정하면 참조(주소)가 그대로라서, **React가 바뀐 줄 모르고 다시 그리지 않는다.**
 
-이처럼 많은 정보들이 불변할 수 밖에 없습니다. 그렇지만 인터넷에서 가변(수정, 삭제)는 너무 쉽게 일어납니다.
-무질서한 수정과 삭제로 원본이 훼손되는 것을 막는 방법을 살펴볼 것입니다.
-cf. 그렇다고 수정과 삭제가 꼭 나쁜 것만은 아닙니다.
+```ts
+// ❌ 원본을 직접 수정 → 같은 참조라서 리렌더링이 일어나지 않을 수 있다
+items.push(newItem)
+setItems(items)
+
+// ✅ 새 배열을 만들어 교체
+setItems([...items, newItem])
+
+// ✅ 객체도 마찬가지
+setUser({ ...user, name: '새 이름' })
+```
+
+- 불변성을 지키면 이전 상태가 그대로 남아 있으므로 **변경 추적, 실행 취소(undo), 타임 트래블 디버깅** 이 쉬워진다.
+- 중첩이 깊은 객체를 매번 펼쳐 쓰기 번거로우면 **Immer** 를 쓴다. 직접 수정하는 문법으로 쓰면 내부에서 새 객체를 만들어 준다. (Redux Toolkit, Zustand의 `immer` 미들웨어에 포함)
+- 새로 추가된 배열 메서드 `toSorted()`, `toReversed()`, `toSpliced()`, `with()`도 원본을 바꾸지 않고 새 배열을 반환한다.
+
+현실에도 불변이어야 하는 정보가 많다.
+
+- e.g. 인쇄되어 배포된 종이책, 역사 기록, 회계 장부, 블록체인
+- 수정이 필요하면 원본을 지우지 않고 **"정정 기록"을 새로 추가** 한다. 불변 상태 관리도 같은 생각이다.
+
+---
+
+## 7. 앞으로의 흐름
+
+- **서버 컴포넌트로 전역 상태가 줄어든다** : 데이터 대부분을 서버에서 가져와 렌더링하면서, 클라이언트에 남는 상태가 적어졌다.
+- **Signals** : Solid, Svelte 5(Runes), Angular, Vue, Preact 등이 "값이 바뀐 곳만 정확히 갱신"하는 Signals를 채택했고, TC39에서 JS 표준으로 넣자는 제안도 논의 중이다.
+- **React는 컴파일러로** : React는 Signals 대신 React Compiler로 불필요한 리렌더링을 자동으로 줄이는 쪽을 택했다. 그래서 selector나 `memo`로 직접 최적화해야 하는 부담이 줄어드는 중이다.
+- 결론적으로 상태 관리 라이브러리는 **"모든 상태를 담는 큰 그릇"에서 "꼭 필요한 클라이언트 상태만 담는 작은 도구"** 로 바뀌고 있다.
+
+---
+
+## 참고
+
+- [React - 상태 관리](https://ko.react.dev/learn/managing-state)
+- [React - Context로 데이터 깊게 전달하기](https://ko.react.dev/learn/passing-data-deeply-with-context)
+- [Zustand](https://zustand.docs.pmnd.rs/), [Jotai](https://jotai.org/), [Valtio](https://valtio.dev/)
+- [Redux Toolkit](https://redux-toolkit.js.org/), [Redux 한국어 문서](https://ko.redux.js.org/)
+- [MobX](https://mobx.js.org/), [XState](https://stately.ai/docs/xstate)
+- [Recoil GitHub (아카이브됨)](https://github.com/facebookexperimental/Recoil)
+- [Velog - 리덕스(Redux)는 왜 쓰는 건데⁉](https://velog.io/@wooder2050/%EB%A6%AC%EB%8D%95%EC%8A%A4Redux%EB%8A%94-%EC%99%9C-%EC%93%B0%EB%8A%94-%EA%B1%B4%EB%8D%B0)
