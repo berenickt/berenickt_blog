@@ -27,6 +27,7 @@ const SECTION_TITLES: Record<string, string> = {
   mobile: 'Mobile',
   cs: 'CS',
   languages: 'Languages',
+  books: 'Books',
   memo: 'Memo',
 }
 

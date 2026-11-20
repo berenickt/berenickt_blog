@@ -6,7 +6,7 @@ export default {
   error: 'Error',
   blog: 'Blog',
   shortcuts: 'ShortCuts(단축키)',
-  study: 'Study(공부법·독서)',
+  study: 'Study(공부법)',
   journal: 'Journal(기록저널)',
   diary: 'Diary(개인일기)',
   'my-values': '나의 생각과 가치관',

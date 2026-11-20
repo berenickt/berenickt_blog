@@ -23,6 +23,10 @@ export default {
     title: 'Languages',
     type: 'page',
   },
+  books: {
+    title: 'Books',
+    type: 'page',
+  },
   memo: {
     title: 'Memo',
     type: 'page',
