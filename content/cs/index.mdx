@@ -4,130 +4,340 @@ date: 2023/01/02
 tags: [CS]
 ---
 
-## [참고] 로드맵
+## 0. 한눈에 보기
 
-- https://roadmap.sh/computer-science
-- 컴퓨터과학 스스로 학습하기 : https://github.com/minnsane/TeachYourselfCS-KR
-- https://github.com/Seogeurim/CS-study
-- 어떻게 공부할 것인가 시리즈 : https://covenant.tistory.com/222
+프레임워크와 라이브러리는 몇 년마다 바뀌지만, **컴퓨터과학(CS) 기초는 거의 변하지 않는다.**
+새로운 기술을 빨리 이해하고, 성능 문제와 장애의 원인을 찾고, AI가 만든 코드를 판단하는 힘은 결국 CS 기초에서 나온다.
+
+| 순서 | 분야                    | 핵심 질문                                                  | 실무에서 만나는 곳                                 |
+| ---- | ----------------------- | ---------------------------------------------------------- | -------------------------------------------------- |
+| 1    | 프로그래밍 언어         | 컴퓨터에게 어떻게 일을 시키나?                             | 모든 개발                                          |
+| 2    | 자료구조 & 알고리즘     | 데이터를 어떻게 담고, 어떻게 빠르게 처리하나?              | 성능 최적화, 코딩 테스트, DB 인덱스, 캐시          |
+| 3    | 컴퓨터구조              | CPU와 메모리는 코드를 어떻게 실행하나?                     | 성능, 메모리 사용량, 동시성                        |
+| 4    | 운영체제                | 여러 프로그램이 어떻게 동시에 돌아가나?                    | 프로세스·스레드, 비동기, 서버 장애 분석            |
+| 5    | 네트워크                | 데이터는 어떻게 다른 컴퓨터로 전달되나?                    | HTTP, API, 배포, CORS, 보안                        |
+| 6    | 데이터베이스            | 데이터를 어떻게 안전하고 빠르게 저장·조회하나?             | 백엔드 개발 전반, 쿼리 성능                        |
+| 7    | UNIX/Linux              | 서버는 어떻게 다루나?                                      | 서버 운영, 배포, 로그 분석                         |
+| 8    | 디자인 패턴 & 설계      | 바뀌기 쉬운 코드를 어떻게 설계하나?                        | 프레임워크 이해, 유지보수                          |
+| 9    | 소프트웨어 공학         | 팀으로 소프트웨어를 어떻게 만들고 관리하나?                | 협업, 테스트, 요구사항, 일정                       |
+| 10   | 수학                    | 논리와 계산을 어떻게 엄밀하게 다루나?                      | 알고리즘, 그래픽스, AI·데이터                      |
+| 11   | 컴파일러                | 내가 쓴 코드는 어떻게 기계어가 되나?                       | 빌드 도구, 트랜스파일러, 린터                      |
+| 12   | 보안                    | 시스템과 데이터를 어떻게 지키나?                           | 인증, 웹 보안, 인프라 보안                         |
+
+공부 순서 팁
+
+- **2 → 4 → 5 → 6** 이 실무에 가장 직접적으로 쓰이는 핵심이다. 취업 면접 단골 주제이기도 하다.
+- 3(컴퓨터구조)과 4(운영체제)는 함께 공부하면 훨씬 잘 이해된다.
+- 처음부터 두꺼운 원서를 정독하려고 하지 말자. **입문서로 전체 그림을 잡고 → 실무에서 막힐 때 심화 자료로 깊게** 들어가는 것이 오래 간다.
+- 공부한 내용을 블로그에 **자기 말로 정리** 하면 기억에 가장 오래 남는다.
 
 ---
 
-## 1. 언어 선택
+## 1. 프로그래밍 언어 선택
 
-1. C
-2. Java
-3. C++
-4. Python
-5. Go
-6. C#
-7. Rust
+CS 공부의 도구가 될 언어다. 목적에 따라 고르자.
+
+| 언어       | CS 공부에서의 장점                                                  |
+| ---------- | ------------------------------------------------------------------- |
+| **C**      | 메모리·포인터를 직접 다뤄 **컴퓨터가 실제로 어떻게 동작하는지** 이해하기 좋다. 운영체제·시스템 공부의 기본 |
+| **C++**    | C의 저수준 제어 + 객체지향·STL. 알고리즘 대회와 게임·시스템 개발     |
+| **Java**   | 객체지향과 디자인 패턴 공부, 국내 백엔드(Spring) 실무              |
+| **Python** | 문법이 간단해 **알고리즘·수학·AI** 공부에 집중하기 좋다. 코딩 테스트에도 많이 사용 |
+| **Go**     | 단순한 문법과 강력한 동시성(goroutine). 서버·인프라 도구            |
+| **C#**     | 객체지향, 게임(Unity), 윈도우·기업용 개발                           |
+| **Rust**   | 메모리 안전성과 소유권 개념. 시스템 프로그래밍의 차세대 언어        |
+
+- 실무 언어(JavaScript·TypeScript 등)와 별개로, **C(또는 C++)를 한 번은 다뤄 보는 것** 을 추천한다. 메모리, 포인터, 스택과 힙을 직접 경험하면 다른 언어의 동작도 훨씬 잘 이해된다.
+- cf. 백엔드 언어 선택은 [백엔드 언어·프레임워크 선택](/backend/select-lang) 참고
 
 ---
 
 ## 2. 자료구조 & 알고리즘
 
-- 자료구조(Data Structure)
-  - C언어로 쉽게 풀어쓴 자료구조
-  - 책 & 어플 : 알고리즘 도감
-- 알고리즘(Algorithm)
-  - 개념 강의 : [Youtube 엔지니어 대한민국 ](https://www.youtube.com/user/damazzang/videos)
-  - 책 : 파이썬 알고리즘 인터뷰
-  - 책 : The Algorithm Design Manual
-    - 고전
+**배우는 것**
+
+- 자료구조 : 배열, 연결 리스트, 스택, 큐, 해시 테이블, 트리(이진 탐색 트리, 힙), 그래프
+- 알고리즘 : 정렬, 탐색(이진 탐색), 재귀, 완전 탐색, 그리디, 동적 계획법(DP), 그래프 탐색(BFS·DFS), 최단 경로
+- **시간 복잡도·공간 복잡도(Big-O)** : 코드가 데이터가 늘어날 때 얼마나 느려지는지 예측하는 법
+
+**왜 필요할까?**
+
+- `Array.includes`를 반복문 안에서 쓰면 왜 느려질까? `Set`이나 `Map`을 쓰면 왜 빨라질까? → 해시 테이블
+- DB 인덱스(B-Tree), 캐시(해시), 작업 큐(큐·힙), 라우팅(그래프) 등 **대부분의 도구가 자료구조 위에** 만들어져 있다.
+- 대부분의 회사가 **코딩 테스트** 로 채용 과정을 시작한다.
+
+**자료**
+
+- 책 : C언어로 쉽게 풀어쓴 자료구조
+- 책 & 앱 : 알고리즘 도감 (그림으로 개념 잡기)
+- 강의 : [YouTube 엔지니어 대한민국](https://www.youtube.com/user/damazzang/videos)
+- 책 : 파이썬 알고리즘 인터뷰 (코딩 테스트 대비)
+- 책 : The Algorithm Design Manual (고전)
+- 연습 : 백준, 프로그래머스, LeetCode
+
+cf. 이 블로그 : [자료구조&알고리즘-js](/cs/algorithm-js/01-Intro), [백준 문제 풀이](/cs/baekjoon/basic-1/100-1-concept)
 
 ---
 
-## 3. 디자인 패턴
+## 3. 컴퓨터구조
 
-- Ebook : [디자인 패턴에 뛰어들기](https://refactoring.guru/ko/design-patterns/book)
+**배우는 것**
 
----
+- 데이터 표현 : 2진수, 정수·실수 표현, 문자 인코딩
+- 명령어와 CPU 동작 : 명령어 사이클, 레지스터, 파이프라이닝
+- 메모리 계층 : 레지스터 → **캐시** → RAM → 디스크, 그리고 **지역성(locality)**
+- 보조 기억 장치, 입출력, 멀티코어
 
-## 4. 수학
+**왜 필요할까?**
 
-- 이산수학
-  - 강의 : [동빈나 유튜브 이산수학 강의](https://youtu.be/TLszG8J8mgs)
-  - 강의 : [경희대 이상준 교수 이산수학 강의](https://www.youtube.com/watch?v=pNPowcLmVus&list=PLaqQvlCBe8vLrmtPgU7DV6r7Ofk43dB0m)
-- 선형대수
-  - 강의 : [이상엽 선형대수학 강의](https://youtu.be/525w2Zqh13M)
+- `0.1 + 0.2 !== 0.3`인 이유 → 부동소수점 표현
+- 같은 계산이라도 메모리를 순서대로 읽으면 왜 훨씬 빠를까? → 캐시와 지역성
+- 멀티코어 시대의 동시성·병렬 처리를 이해하는 바탕
 
----
+**자료**
 
-## 5. 컴퓨터구조
+- 책 & 강의 : [혼자 공부하는 컴퓨터구조 + 운영체제](https://youtu.be/bls_GjX-4U8) ✅ 입문 추천
+- 책 : [Computer Systems: A Programmer's Perspective](http://csapp.cs.cmu.edu/3e/home.html) (번역본 : 컴퓨터 시스템, 이하 CS:APP) — 프로그래머 관점의 명저
 
-- 책&강의 : [혼자 공부하는 컴퓨터구조 & 운영체제](https://youtu.be/bls_GjX-4U8)
-- 책 : Computer Systems: A Programmer's Perspective
-  - [Computer Systems: A Programmer's Perspective](http://csapp.cs.cmu.edu/3e/home.html)(번역본: 컴퓨터시스템, 이하 CS:APP)
-
----
-
-## 6. 운영체제
-
-- 운영체제- 구현희 저(한빛미디어)
-- 운영체제와 정보기술의 원리 - 반효경 저
-- Operating Systems: Three Easy Pieces(번역본: 운영체제 아주 쉬운 세가지 이야기, 이하 OSTEP)
-  - https://pages.cs.wisc.edu/~remzi/OSTEP/
-- [Modern Operating Systems(번역본: 운영체제론)](https://www.amazon.com/dp/013359162X/)
-- [Operating System Concepts(번역본: 운영체제)](https://www.amazon.com/dp/1118063333/)(속칭 "공룡책")
-  - [Youtube 주니온TV 강의](https://www.youtube.com/watch?v=zGBm37kze9I&list=PLHqxB9kMLLaOs2BM2KbuvttBYCgDoFm-5)
+cf. 이 블로그 : [컴퓨터구조](/cs/computer-architecture/01-intro)
 
 ---
 
-## 7. UNIX 시스템
+## 4. 운영체제
+
+**배우는 것**
+
+- **프로세스와 스레드**, 컨텍스트 스위칭
+- CPU 스케줄링
+- **동기화** : 경쟁 상태(race condition), 뮤텍스·세마포어, **교착 상태(데드락)**
+- 메모리 관리 : 가상 메모리, 페이징
+- 파일 시스템, 입출력
+
+**왜 필요할까?**
+
+- "Node.js는 싱글 스레드인데 어떻게 요청을 동시에 처리하지?" → 이벤트 루프와 비동기 I/O
+- "동시에 주문이 들어오면 재고가 마이너스가 됐다" → 경쟁 상태와 동기화
+- "서버 메모리가 계속 늘어난다", "스레드 풀이 꽉 차서 응답이 멈췄다" 같은 장애 분석
+
+**자료**
+
+- 책 : 혼자 공부하는 컴퓨터구조 + 운영체제 (입문)
+- 강의 : 반효경 교수 운영체제 (KOCW) / 책 : 운영체제와 정보기술의 원리 — 반효경
+- 책 : 운영체제 — 구현회 (한빛미디어)
+- [Operating Systems: Three Easy Pieces](https://pages.cs.wisc.edu/~remzi/OSTEP/) (번역본 : 운영체제 아주 쉬운 세 가지 이야기, 이하 OSTEP) — 원서 무료 공개 ✅
+- [Operating System Concepts](https://www.amazon.com/dp/1118063333/) (번역본 : 운영체제, 속칭 "공룡책")
+  - [YouTube 주니온TV 강의](https://www.youtube.com/watch?v=zGBm37kze9I&list=PLHqxB9kMLLaOs2BM2KbuvttBYCgDoFm-5)
+- [Modern Operating Systems](https://www.amazon.com/dp/013359162X/) (번역본 : 운영체제론)
+
+cf. 이 블로그 : [운영체제](/cs/operating-system/01-intro)
+
+---
+
+## 5. 네트워크
+
+**배우는 것**
+
+- OSI 7계층, TCP/IP 4계층
+- IP 주소, 서브넷, 라우팅, **DNS**
+- **TCP와 UDP** : 연결 수립(3-way handshake), 흐름·혼잡 제어
+- **HTTP** : 메서드, 상태 코드, 헤더, 쿠키, HTTP/2·HTTP/3
+- **HTTPS·TLS**, 프록시, 로드 밸런서, CDN
+
+**왜 필요할까?**
+
+- "브라우저에 URL을 입력하면 무슨 일이 일어나나?" — 면접 단골 질문이자, 웹 개발의 전체 그림
+- CORS 오류, 타임아웃, 느린 API, 인증서 오류 같은 문제를 스스로 해결하는 힘
+
+**자료**
+
+- 입문
+  - 책 : [모두의 네트워크](http://www.yes24.com/Product/Goods/61794014)
+  - 강의 : [인프런 - 모든 개발자를 위한 HTTP 웹 기본 지식](https://www.inflearn.com/course/http-웹-네트워크) ✅ 웹 개발자 추천
+  - 책 : 따라하며 배우는 AWS 네트워크 입문
+- 심화
+  - 책 : [HTTP 완벽 가이드](http://www.yes24.com/Product/Goods/15381085)
+  - 책 : [TCP/IP 완벽 가이드](http://www.yes24.com/Product/Goods/2355754)
+  - [Computer Networking: A Top-Down Approach](https://www.amazon.com/dp/0133594149/) (번역본 : 컴퓨터 네트워킹 하향식 접근)
+    - [KOCW 이석복 교수(한양대학교) 강의](http://www.kocw.net/home/search/kemView.do?kemId=1169634)
+
+cf. 이 블로그 : [네트워크](/cs/network/01-intro), [와이어샤크(SSL과 HTTPS)](/devops/wireshark)
+
+---
+
+## 6. 데이터베이스
+
+**배우는 것**
+
+- 관계형 모델, **SQL** (`SELECT`, `JOIN`, `GROUP BY`, 서브쿼리)
+- 데이터 모델링 : ERD, **정규화**
+- **트랜잭션과 ACID**, 격리 수준, 락(lock)
+- **인덱스** (B-Tree)와 실행 계획, 쿼리 튜닝
+- NoSQL(키-값, 문서, 그래프 등)과 분산 데이터베이스
+
+**왜 필요할까?**
+
+- 대부분의 서비스는 결국 **데이터를 저장하고 꺼내는 일** 이다. 느린 서비스의 원인 1순위는 느린 쿼리다.
+- 동시에 여러 요청이 같은 데이터를 바꿀 때 데이터가 꼬이지 않게 하려면 트랜잭션을 이해해야 한다.
+
+**자료**
+
+- 개론
+  - 책 : 오라클로 배우는 데이터베이스 개론과 실습
+  - 책 : Do it! 오라클로 배우는 데이터베이스 입문
+  - 책 : 이것이 MySQL이다
+- 오라클 심화
+  - Oracle Database 공식 문서
+  - 책 : 오라클 SQL과 PL/SQL을 다루는 기술
+  - 책 : 한 권으로 끝내는 오라클 11g부터 12c 완벽 바이블
+  - 책 : 그림으로 공부하는 오라클 구조
+- 튜닝
+  - 책 : 만화로 보는 오라클 튜닝
+  - 책 : 개발자를 위한 오라클 SQL 튜닝
+  - 책 : 오라클 성능 고도화 원리와 해법 시리즈
+- 자격증 : SQLD / SQLP
+- 넓게 보기 : [Martin Kleppmann - 데이터 중심 애플리케이션 설계](https://dataintensive.net/) (분산 시스템과 데이터의 고전)
+
+cf. 이 블로그 : [데이터베이스 종류](/backend/database-type), [MySQL](/backend/mysql), [PostgreSQL](/backend/postgresql), [Oracle](/backend/oracle)
+
+---
+
+## 7. UNIX / Linux 시스템
+
+**배우는 것**
+
+- 파일 시스템 구조, 권한(`chmod`, `chown`), 사용자·그룹
+- 프로세스 관리(`ps`, `top`, `kill`), 서비스 관리(`systemctl`)
+- 셸과 셸 스크립트, 파이프·리다이렉션
+- 패키지 관리, 네트워크 명령어(`curl`, `ss`, `dig`)
+
+**왜 필요할까?**
+
+- 서버의 대부분은 Linux에서 돌아간다. Docker 컨테이너도 Linux다.
+- 로그를 보고, 프로세스를 확인하고, 서버에 접속해 문제를 해결하는 일은 결국 터미널에서 한다.
+
+**자료**
 
 - 책 : 이것이 우분투 리눅스다
 - 책 : 리눅스 입문자를 위한 명령어 사전
-- 자격증 : 리눅스 마스터
+- 자격증 : 리눅스마스터
+
+cf. 이 블로그 : [UNIX 시스템](/cs/unix-system)
 
 ---
 
-## 8. 네트워크
+## 8. 디자인 패턴 & 설계
 
-- 입문
-  - 책 : [모두의 네트워크](http://www.yes24.com/Product/Goods/61794014?OzSrank=11)
-  - 강의 : [인프런. 모든 개발자를 위한 HTTP 웹 기본 지식](https://www.inflearn.com/course/http-웹-네트워크#)
-  - 책 : 따라하며 배우는 AWS 네트워크 입문
-- 심화
-  - [HTTP 완벽 가이드](http://www.yes24.com/Product/Goods/15381085?OzSrank=1)
-  - [TCP/IP 완벽 가이드](http://www.yes24.com/Product/Goods/2355754)
-  - [Computer Networking: A Top-Down Approach(번역본: 컴퓨터 네트워킹 하향식 접근)](https://smile.amazon.com/Computer-Networking-Top-Down-Approach-7th/dp/0133594149/)
-    - [KOCW 이석복(한양대학교)](http://www.kocw.net/home/search/kemView.do?kemId=1169634)
+**배우는 것**
 
----
+- 객체지향의 4가지 특징, **SOLID 원칙**, 결합도와 응집도
+- GoF 디자인 패턴 : 생성(싱글톤, 팩토리…), 구조(어댑터, 데코레이터…), 행위(옵저버, 전략…)
+- 클린 코드 : 이름 짓기, 함수, 주석, 테스트
 
-## 9. 데이터베이스
+**왜 필요할까?**
 
-- 책 : 오라클로 배우는 데이터베이스 개론과 실습
-- 책 : Do it! 오라클로 배우는 데이터베이스 입문
-  - Oracle Database 공식 pdf
-  - 책 : 오라클 SQL과 PL/SQL을 다루는 기술
-- 책 : 한 권으로 끝내는 오라클 11g부터 12c 완벽 바이블
-- 책 : 그림으로 공부하는 오라클 구조
-- 책 : 만화로 보는 오라클 튜닝
-- 책 : 개발자를 위한 오라클 SQL 튜닝
-- 책 : 오라클 성능 고도화 원리와 해법 시리즈
-- 책 : 이것이 MySQL이다
-- 자격증 : SQLD/SQLP
-- Mongo DB
+- Spring의 의존성 주입, React의 컴포넌트 합성, 이벤트 리스너(옵저버) 등 **프레임워크 안에 패턴이 녹아 있다.** 패턴을 알면 프레임워크가 왜 그렇게 설계됐는지 보인다.
+- 기능 추가와 수정이 쉬운 코드를 만드는 기준이 된다. 단, **패턴을 위한 패턴** 은 오히려 코드를 복잡하게 만든다.
+
+**자료**
+
+- E-book : [디자인 패턴에 뛰어들기 (Refactoring.Guru)](https://refactoring.guru/ko/design-patterns/book)
+- 책 : 클린 코드 — 로버트 C. 마틴
+
+cf. 이 블로그 : [디자인 패턴](/cs/design-pattern/01-OOP), [GoF 디자인 패턴-Java](/cs/gof-design-pattern-java/01-creational-patterns), [클린 코드](/cs/clean-code/01-clean-code)
 
 ---
 
-## 10. 컴파일러
+## 9. 소프트웨어 공학
 
-- [Compilers: Principles, Techniques & Tools(번역본: 컴파일러)](https://smile.amazon.com/Compilers-Principles-Techniques-Tools-2nd/dp/0321486811)(속칭 “드래곤북”)
-  - [edX의 Alex Aiken의 강의](https://www.edx.org/course/compilers)
+**배우는 것**
 
----
+- 소프트웨어 개발 생명 주기(SDLC), 폭포수 vs 애자일·스크럼
+- 요구사항 분석, 설계(UML), 구현, **테스트**, 유지보수
+- 형상 관리(Git), 품질 관리, 프로젝트 관리
 
-## 11. 소프트웨어 공학
+**왜 필요할까?**
+
+- 혼자 만드는 코드와 **팀이 오래 유지보수하는 소프트웨어** 는 다르다. 요구사항 정리, 일정 산정, 테스트, 문서화가 모두 개발의 일부다.
+- 정보처리기사 시험 범위와도 많이 겹친다.
+
+**자료**
 
 - 책 : 방송대 소프트웨어공학
+- 정보처리기사 필기 교재
+
+cf. 이 블로그 : [소프트웨어공학](/cs/software-engineering/01-intro), [Git & GitHub](/devops/git)
+
+---
+
+## 10. 수학
+
+**배우는 것**
+
+- **이산수학** : 논리, 증명, 집합, 관계, 그래프, 조합 → 알고리즘과 자료구조의 바탕
+- **선형대수** : 벡터, 행렬, 선형 변환 → 그래픽스·게임, **AI·머신러닝** 의 기본 언어
+- **확률과 통계** : 확률 분포, 추정, 가설 검정 → 데이터 분석, A/B 테스트, AI
+
+**자료**
+
+- 이산수학
+  - 강의 : [동빈나 YouTube 이산수학](https://youtu.be/TLszG8J8mgs)
+  - 강의 : [경희대 이상준 교수 이산수학](https://www.youtube.com/watch?v=pNPowcLmVus&list=PLaqQvlCBe8vLrmtPgU7DV6r7Ofk43dB0m)
+- 선형대수
+  - 강의 : [이상엽 선형대수학](https://youtu.be/525w2Zqh13M)
+  - 강의 : 3Blue1Brown "선형대수학의 본질" (그림으로 직관 잡기)
+
+cf. 이 블로그 : [이산수학](/cs/discrete-mathematics/01-intro), [선형대수](/cs/linear-algebra/01-intro)
+
+---
+
+## 11. 컴파일러
+
+**배우는 것**
+
+- 어휘 분석(토큰) → 구문 분석(**AST**, 추상 구문 트리) → 의미 분석 → 최적화 → 코드 생성
+- 인터프리터와 컴파일러, JIT 컴파일
+
+**왜 필요할까?**
+
+- Babel, TypeScript, ESLint, Prettier, 번들러 같은 개발 도구는 모두 **코드를 AST로 바꿔서 분석·변환** 한다. 컴파일러를 알면 이 도구들이 어떻게 동작하는지 보인다.
+- 언어마다 실행 속도와 특징이 다른 이유를 이해할 수 있다.
+
+**자료**
+
+- [Compilers: Principles, Techniques & Tools](https://www.amazon.com/dp/0321486811) (번역본 : 컴파일러, 속칭 "드래곤북")
+- 강의 : [Stanford Alex Aiken 교수 Compilers (edX)](https://www.edx.org/learn/computer-science/stanford-university-compilers)
+- 실습 : [Crafting Interpreters](https://craftinginterpreters.com/) — 직접 인터프리터를 만들며 배우는 무료 온라인 책 ✅
 
 ---
 
 ## 12. 보안
 
+**배우는 것**
+
+- 암호학 기초 : 대칭키·공개키 암호, 해시, 전자 서명, TLS
+- 웹 보안 : **OWASP Top 10** (SQL 인젝션, XSS, CSRF, 접근 제어 실패 등)
+- 인증과 인가 : 세션, JWT, OAuth
+- 시스템·네트워크 보안, 시큐어 코딩
+
+**왜 필요할까?**
+
+- 보안 사고 한 번이 서비스와 회사의 신뢰를 무너뜨린다. 보안은 보안팀만의 일이 아니라 **모든 개발자의 기본기** 다.
+
+**자료**
+
 - 인프런 시큐아카데미 강좌
-  - 책 : 화이트 해커를 위한 웹 해킹의 기술
-- ...
+- 책 : 화이트 해커를 위한 웹 해킹의 기술
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- 실습 : [PortSwigger Web Security Academy](https://portswigger.net/web-security) (무료 웹 해킹 실습)
+
+cf. 이 블로그 : [로그인의 역사(feat. JWT)](/backend/login), [프론트엔드 로드맵 - 웹 보안](/frontend)
+
+---
+
+## 13. 함께 보면 좋은 로드맵
+
+- [roadmap.sh - Computer Science](https://roadmap.sh/computer-science)
+- [컴퓨터과학 스스로 학습하기 (Teach Yourself CS 한국어)](https://github.com/minnsane/TeachYourselfCS-KR)
+- [CS-study (면접 대비 CS 정리)](https://github.com/Seogeurim/CS-study)
+- [어떻게 공부할 것인가 시리즈](https://covenant.tistory.com/222)
+- 분야별 로드맵 : [프론트엔드](/frontend), [백엔드](/backend), [DevOps](/devops)

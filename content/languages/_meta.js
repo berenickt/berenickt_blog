@@ -12,7 +12,7 @@ export default {
   js: 'JavaScript',
   'js-dom': 'JS-DOM',
   // TODO(글 작성 후 주석 해제): 'js-functional': 'JS-functional',
-  'js-codingtest-logic': 'JS 코테 12가지 로직',
+  'js-codingtest-logic': 'JS 코딩 테스트 핵심 정리',
   ts: 'TypeScript',
   '-- 앱 --': {
     type: 'separator',
