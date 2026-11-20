@@ -1,7 +1,505 @@
 ---
-title: 'graphQL'
+title: 'GraphQL'
 date: 2024/01/24
 tags: [Backend, GraphQL]
 ---
 
-# 시작페이지
+## 1. GraphQL이란?
+
+**API를 위한 쿼리 언어이자, 그 쿼리를 실행하는 서버 런타임** 이다.
+클라이언트가 **필요한 데이터의 모양을 직접 적어서 요청** 하면, 서버는 정확히 그 모양으로 응답한다.
+
+```graphql
+# 요청 (Query)
+query {
+  user(id: "1") {
+    name
+    posts(first: 2) {
+      title
+    }
+  }
+}
+```
+
+```json
+// 응답 — 요청한 모양 그대로
+{
+  "data": {
+    "user": {
+      "name": "철수",
+      "posts": [{ "title": "GraphQL 입문" }, { "title": "DataLoader 정리" }]
+    }
+  }
+}
+```
+
+- 2012년 페이스북이 모바일 앱의 데이터 요청 문제를 해결하려고 내부에서 만들었고, 2015년 공개했다.
+- 2018년부터는 리눅스 재단 산하 **GraphQL Foundation** 에서 명세(spec)를 관리한다.
+- 특정 언어나 DB에 묶이지 않는다. **SQL처럼 DB를 조회하는 언어가 아니라, API 요청 형식** 이다. 데이터가 DB에 있든, 다른 REST API에 있든 상관없다.
+
+---
+
+### 1.1 왜 등장했을까? REST의 한계
+
+| 문제                     | REST에서                                                             | GraphQL에서                                       |
+| ------------------------ | -------------------------------------------------------------------- | ------------------------------------------------- |
+| **Over-fetching**        | `GET /users/1`이 필요 없는 필드까지 모두 내려줌                      | 요청한 필드만 응답                                |
+| **Under-fetching**       | 사용자 + 글 + 댓글을 얻으려면 API를 여러 번 호출                     | 한 번의 요청으로 중첩된 데이터를 함께 조회        |
+| **엔드포인트 증가**      | 화면마다 맞춤 API(`/users/1/summary`, `/users/1/detail`…)가 늘어남   | 엔드포인트는 보통 `/graphql` **하나**             |
+| **문서와 타입**          | 별도로 OpenAPI 명세를 작성·관리해야 함                               | **스키마 자체가 문서이자 타입** (자동 완성, 코드 생성) |
+| **버전 관리**            | `/v1`, `/v2`로 API 버전을 나눔                                       | 필드를 추가하고, 오래된 필드는 `@deprecated` 처리 |
+
+REST의 기본 개념과 한계는 [Data Fetching 라이브러리](/frontend/data-fetching) 6~9장에도 정리되어 있다.
+
+---
+
+## 2. 스키마 (Schema)
+
+GraphQL 서버의 출발점은 **스키마** 다. "어떤 데이터를 어떤 모양으로 요청할 수 있는지"를 타입으로 정의한 **서버와 클라이언트 사이의 계약서** 다.
+스키마는 **SDL(Schema Definition Language)** 로 작성한다.
+
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String
+  posts(first: Int = 10): [Post!]!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String
+  author: User!
+  status: PostStatus!
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+# 읽기 진입점
+type Query {
+  me: User
+  user(id: ID!): User
+  posts(status: PostStatus): [Post!]!
+}
+
+# 쓰기 진입점
+type Mutation {
+  createPost(input: CreatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+}
+
+# 실시간 진입점
+type Subscription {
+  postCreated: Post!
+}
+
+input CreatePostInput {
+  title: String!
+  content: String
+}
+```
+
+### 2.1 타입 정리
+
+| 종류                | 설명                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| **Scalar**          | 기본 값 타입 : `Int`, `Float`, `String`, `Boolean`, `ID`. 커스텀 스칼라도 정의 가능(e.g. `DateTime`) |
+| **Object**          | 필드를 가진 타입 (`User`, `Post`)                                                    |
+| **Query / Mutation / Subscription** | 요청의 진입점이 되는 특별한 루트 타입                               |
+| **Input**           | 인자로 받는 객체 타입. Object 타입은 인자로 쓸 수 없어서 따로 정의                    |
+| **Enum**            | 정해진 값 중 하나                                                                     |
+| **Interface / Union** | 여러 타입을 묶어서 다형성 표현 (e.g. 검색 결과가 `User`일 수도, `Post`일 수도)      |
+| **List**            | `[Post]` 배열                                                                         |
+
+### 2.2 Null 표시 `!`
+
+GraphQL은 **기본이 nullable** 이고, `!`를 붙이면 null이 아님(Non-Null)을 보장한다.
+
+| 표기         | 의미                                        |
+| ------------ | ------------------------------------------- |
+| `[Post]`     | 배열 자체도 null 가능, 요소도 null 가능     |
+| `[Post!]`    | 배열은 null 가능, 요소는 null 불가          |
+| `[Post!]!`   | 배열도 요소도 null 불가 (빈 배열은 가능) ✅ 목록에 가장 많이 씀 |
+
+- 주의 : `!` 필드의 resolver에서 에러가 나면, null이 **상위 nullable 필드까지 전파** 되어 더 큰 범위의 데이터가 사라진다.
+  - 그래서 실패할 수 있는 필드(외부 API 결과 등)는 nullable로 두는 것이 일반적이다.
+
+---
+
+## 3. Query · Mutation · Subscription
+
+### 3.1 Query (조회)
+
+```graphql
+query GetUser($id: ID!, $withPosts: Boolean = false) {
+  user(id: $id) {
+    ...UserBasic
+    posts @include(if: $withPosts) {
+      title
+    }
+  }
+}
+
+fragment UserBasic on User {
+  id
+  name
+}
+```
+
+- **변수(Variables)** : `$id`처럼 값을 쿼리 밖에서 JSON으로 전달한다. 쿼리 문자열에 값을 직접 이어 붙이지 말자.
+- **프래그먼트(Fragment)** : 반복되는 필드 묶음을 재사용한다. 컴포넌트마다 필요한 필드를 fragment로 선언하는 패턴이 많다.
+- **디렉티브(Directive)** : `@include(if:)`, `@skip(if:)`로 조건부 필드, `@deprecated`로 사용 중단 표시
+- **별칭(Alias)** : 같은 필드를 다른 인자로 두 번 조회할 때 `a: user(id: "1") { name } b: user(id: "2") { name }`
+
+### 3.2 Mutation (변경)
+
+```graphql
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+  }
+}
+```
+
+- 생성·수정·삭제 요청. 변경 후 **바뀐 데이터를 바로 응답으로 받을 수 있다.** (클라이언트 캐시 갱신에 사용)
+- 관례 : 인자는 `input` 객체 하나로 받고, 결과 타입을 돌려준다.
+
+### 3.3 Subscription (실시간)
+
+```graphql
+subscription {
+  postCreated {
+    id
+    title
+  }
+}
+```
+
+- 서버에서 이벤트가 생길 때마다 클라이언트로 데이터를 **밀어 준다(push).**
+- 전송 방식은 주로 **WebSocket(`graphql-ws` 프로토콜)**, 또는 **SSE(Server-Sent Events)** 를 쓴다.
+
+### 3.4 HTTP로는 어떻게 보낼까?
+
+```http
+POST /graphql
+Content-Type: application/json
+
+{
+  "query": "query GetUser($id: ID!) { user(id: $id) { name } }",
+  "variables": { "id": "1" },
+  "operationName": "GetUser"
+}
+```
+
+- 보통 **POST 하나로** 모든 요청을 보낸다. 조회 Query는 캐싱을 위해 GET으로 보낼 수도 있다.
+- 응답은 `{ "data": ..., "errors": [...] }` 형태다.
+
+---
+
+## 4. Resolver : 스키마를 실제 데이터와 연결하기
+
+스키마는 "무엇을 줄 수 있는지"만 정의한다. **각 필드의 값을 실제로 어디서 어떻게 가져올지** 는 **resolver** 함수가 정한다.
+
+```ts
+const resolvers = {
+  Query: {
+    // (parent, args, context, info)
+    user: (_parent, { id }, ctx) => ctx.db.user.findUnique({ where: { id } }),
+    me: (_parent, _args, ctx) => ctx.currentUser,
+  },
+  Mutation: {
+    createPost: (_parent, { input }, ctx) => {
+      if (!ctx.currentUser) throw new GraphQLError('로그인이 필요합니다', { extensions: { code: 'UNAUTHENTICATED' } })
+      return ctx.db.post.create({ data: { ...input, authorId: ctx.currentUser.id } })
+    },
+  },
+  // 중첩 필드 : User 객체의 posts 필드는 이 함수로 채운다
+  User: {
+    posts: (user, { first }, ctx) => ctx.db.post.findMany({ where: { authorId: user.id }, take: first }),
+  },
+}
+```
+
+resolver의 4가지 인자
+
+| 인자      | 설명                                                                    |
+| --------- | ----------------------------------------------------------------------- |
+| `parent`  | 상위 필드의 결과 (e.g. `User.posts`에서는 해당 `user` 객체)             |
+| `args`    | 이 필드에 전달된 인자 (`{ id }`, `{ first }`)                           |
+| `context` | 요청마다 공유하는 객체 : 로그인 사용자, DB 연결, DataLoader 등          |
+| `info`    | 쿼리 구조 등 실행 정보 (고급 최적화에 사용)                             |
+
+### 4.1 실행 흐름
+
+1. **파싱(Parse)** : 쿼리 문자열을 AST(문법 트리)로 변환
+2. **검증(Validate)** : 스키마에 없는 필드, 잘못된 타입 인자를 실행 전에 걸러냄
+3. **실행(Execute)** : 루트(`Query.user`)부터 resolver를 호출하고, 그 결과를 `parent`로 넘기며 **트리를 따라 내려가며** 필드를 채움
+4. 결과를 요청한 모양의 JSON으로 조립해 응답
+
+- resolver를 따로 정의하지 않은 필드는 `parent[필드이름]`을 그대로 반환하는 **기본 resolver** 가 처리한다.
+
+---
+
+## 5. GraphQL 서버 만들기
+
+### 5.1 Node.js 서버 라이브러리
+
+| 라이브러리                                         | 특징                                                                       |
+| -------------------------------------------------- | -------------------------------------------------------------------------- |
+| [Apollo Server](https://www.apollographql.com/docs/apollo-server) | 가장 널리 쓰이는 GraphQL 서버. Apollo Federation, Studio와 연동       |
+| [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) | The Guild 제작. 가볍고, Node·Bun·Deno·Cloudflare Workers 등 어디서나 동작, SSE 구독 기본 지원 |
+| [Mercurius](https://mercurius.dev/)                | Fastify 플러그인. 빠른 성능, JIT 컴파일, 내장 DataLoader                   |
+| [NestJS GraphQL](https://docs.nestjs.com/graphql/quick-start) | NestJS 모듈. 데코레이터 기반 code-first 또는 schema-first             |
+| [Pothos](https://pothos-graphql.dev/)              | TypeScript **code-first** 스키마 빌더. 타입 안정성이 뛰어나고 Prisma 연동 플러그인 |
+
+- 다른 언어 : Spring for GraphQL(Java), Strawberry·Graphene(Python), gqlgen(Go), Hot Chocolate(.NET)
+
+### 5.2 예시 : GraphQL Yoga
+
+```ts
+import { createServer } from 'node:http'
+import { createSchema, createYoga } from 'graphql-yoga'
+
+const yoga = createYoga({
+  schema: createSchema({
+    typeDefs: /* GraphQL */ `
+      type Post { id: ID!, title: String! }
+      type Query { posts: [Post!]! }
+    `,
+    resolvers: {
+      Query: {
+        posts: () => [{ id: '1', title: 'GraphQL 입문' }],
+      },
+    },
+  }),
+  // 요청마다 만들어지는 context
+  context: ({ request }) => ({ token: request.headers.get('authorization') }),
+})
+
+createServer(yoga).listen(4000, () => console.log('http://localhost:4000/graphql'))
+```
+
+- 브라우저에서 `/graphql`에 접속하면 **GraphiQL** 화면이 열려, 스키마를 탐색하고 쿼리를 바로 실행해 볼 수 있다.
+
+### 5.3 Schema-first vs Code-first
+
+| 방식              | 방법                                                       | 장점                                   | 단점                                   |
+| ----------------- | ---------------------------------------------------------- | -------------------------------------- | -------------------------------------- |
+| **Schema-first**  | SDL을 먼저 작성하고, resolver를 따로 구현                  | 스키마가 한눈에 보임, 프론트와 협업 쉬움 | 스키마와 resolver 타입이 어긋나기 쉬움 → 코드 생성으로 보완 |
+| **Code-first**    | TS 코드(클래스·빌더)로 타입을 정의하면 SDL이 자동 생성됨   | 타입 안정성, 리팩터링이 쉬움           | 스키마 전체 모양을 파악하기 어려울 수 있음 |
+
+- Schema-first에서는 **GraphQL Code Generator** 로 스키마에서 resolver 타입을 생성해 쓰는 것이 일반적이다.
+- Code-first 대표 : Pothos, NestJS(`@ObjectType`, `@Field` 데코레이터), TypeGraphQL
+
+---
+
+## 6. 실무에서 꼭 알아야 할 것
+
+### 6.1 N+1 문제와 DataLoader ⭐
+
+```graphql
+query {
+  posts {          # 1번 쿼리 : 글 100개
+    title
+    author {       # 글마다 작성자 조회 → 100번 쿼리
+      name
+    }
+  }
+}
+```
+
+- resolver는 필드마다 따로 실행되기 때문에, 목록 N개에 대해 중첩 필드를 조회하면 **DB 쿼리가 1 + N번** 나간다.
+- **DataLoader** 는 한 요청 안에서 같은 순간에 들어온 조회를 모아 **한 번의 쿼리(`WHERE id IN (...)`)로 묶고**(배칭), 같은 키는 한 번만 조회한다(캐싱).
+
+```ts
+import DataLoader from 'dataloader'
+
+// 요청마다 새로 만든다 (사용자 간 캐시가 섞이지 않도록)
+const createLoaders = (db) => ({
+  user: new DataLoader(async (ids: readonly string[]) => {
+    const users = await db.user.findMany({ where: { id: { in: [...ids] } } })
+    const map = new Map(users.map(u => [u.id, u]))
+    return ids.map(id => map.get(id) ?? null) // 요청한 ids 순서대로 반환해야 한다
+  }),
+})
+
+const resolvers = {
+  Post: {
+    author: (post, _args, ctx) => ctx.loaders.user.load(post.authorId),
+  },
+}
+```
+
+→ 글 100개를 조회해도 쿼리는 **2번**(글 1번 + 작성자 1번)으로 줄어든다.
+
+### 6.2 인증과 권한
+
+- 인증(누구인가)은 HTTP 레벨에서 처리한다 : `Authorization` 헤더의 토큰을 검증해 **context에 `currentUser`를 넣는다.**
+- 권한(무엇을 할 수 있는가)은 **resolver 또는 비즈니스 로직 계층** 에서 검사한다.
+  - 하나의 엔드포인트로 모든 데이터에 접근할 수 있으므로, 필드 단위로 권한이 빠지지 않았는지 특히 주의해야 한다.
+  - 권한 로직은 resolver마다 흩어 놓기보다 서비스 계층에 모아 두는 것이 좋다. (graphql-shield, 디렉티브 기반 권한도 사용)
+
+### 6.3 에러 처리
+
+```json
+{
+  "data": { "user": null },
+  "errors": [
+    {
+      "message": "권한이 없습니다",
+      "path": ["user"],
+      "extensions": { "code": "FORBIDDEN" }
+    }
+  ]
+}
+```
+
+- GraphQL은 일부 필드가 실패해도 **나머지 데이터는 정상으로 응답(부분 성공)** 할 수 있다.
+- 그래서 HTTP 상태 코드가 200이어도 `errors`가 있을 수 있다. 클라이언트는 **`errors` 배열을 꼭 확인** 해야 한다.
+- `extensions.code`에 에러 종류(`UNAUTHENTICATED`, `FORBIDDEN`, `BAD_USER_INPUT` 등)를 넣어 클라이언트가 분기 처리하게 한다.
+- 운영 환경에서는 내부 에러 메시지·스택 트레이스가 그대로 나가지 않도록 가린다.
+- 예상 가능한 비즈니스 에러(e.g. "이미 사용 중인 이메일")는 에러 대신 **결과 타입(Union)으로 모델링** 하기도 한다.
+
+```graphql
+union CreateUserResult = User | EmailAlreadyTaken | InvalidInput
+```
+
+### 6.4 페이지네이션
+
+- **Offset 방식** : `posts(offset: 20, limit: 10)` — 단순하지만, 데이터가 추가·삭제되면 중복·누락이 생김
+- **Cursor 방식(권장)** : 마지막으로 받은 항목의 커서 다음부터 조회. 무한 스크롤에 적합
+  - Relay가 정한 **Connection 규격** 이 사실상 표준이다.
+
+```graphql
+type Query {
+  posts(first: Int!, after: String): PostConnection!
+}
+
+type PostConnection {
+  edges: [PostEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PostEdge {
+  cursor: String!
+  node: Post!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+```
+
+### 6.5 보안
+
+클라이언트가 쿼리 모양을 마음대로 정할 수 있다는 장점이, 그대로 공격 수단이 될 수 있다.
+
+```graphql
+# 서로를 참조하는 필드로 끝없이 깊은 쿼리 → 서버 과부하
+query {
+  user(id: "1") { posts { author { posts { author { posts { ... } } } } } }
+}
+```
+
+- **쿼리 깊이 제한(Depth Limit)** : e.g. 최대 10단계
+- **쿼리 복잡도 제한(Cost Analysis)** : 필드마다 비용을 매겨 합계가 한도를 넘으면 거부
+- **목록 크기 제한** : `first`의 최대값을 정해 둠 (e.g. 100)
+- **Rate Limiting** : 요청 횟수 제한
+- **Introspection 비활성화** : 운영 환경에서는 스키마 전체를 조회하는 기능을 끄는 경우가 많다. (공개 API라면 예외)
+- **Persisted Queries / Trusted Documents** : 빌드 시점에 쿼리를 미리 등록해 두고, 운영에서는 **등록된 쿼리 ID만 실행** 하게 하면 임의 쿼리 공격을 원천 차단할 수 있다. (자사 앱 전용 API에 가장 강력한 방법)
+
+### 6.6 캐싱
+
+- REST는 URL별로 HTTP 캐시·CDN 캐시를 쉽게 쓰지만, GraphQL은 보통 POST 하나라서 그대로는 어렵다.
+- 해결 방법
+  - **클라이언트 정규화 캐시** : Apollo Client, urql, Relay가 `__typename + id` 기준으로 객체를 캐시
+  - **Persisted Query + GET 요청** 으로 CDN 캐시 활용
+  - 서버 측 응답 캐시(필드별 `@cacheControl` 힌트), resolver 내부의 Redis 캐시
+
+### 6.7 파일 업로드
+
+- GraphQL 명세 자체에는 파일 업로드가 없다. (multipart 확장은 보안·성능 문제로 권장되지 않음)
+- 권장 방식 : Mutation으로 S3 등의 **Presigned URL을 발급** → 클라이언트가 스토리지에 직접 업로드 → 업로드된 파일 경로를 다시 Mutation으로 저장
+
+---
+
+## 7. 여러 서비스를 하나의 GraphQL로 : Federation
+
+서비스가 커져 마이크로서비스(MSA)로 나뉘면, 각 팀이 자기 GraphQL 서버(subgraph)를 운영하고, 이를 **하나의 통합 스키마(supergraph)** 로 합쳐서 제공할 수 있다.
+
+```
+클라이언트 ──▶ Gateway / Router ──┬──▶ 사용자 서비스 (User)
+                                   ├──▶ 주문 서비스 (Order)
+                                   └──▶ 상품 서비스 (Product)
+```
+
+- 클라이언트는 하나의 엔드포인트만 알면 되고, 각 팀은 자기 타입을 독립적으로 개발·배포한다.
+- 대표 : **Apollo Federation**(Apollo Router), GraphQL Mesh·Hive Gateway(The Guild)
+- 서로 다른 구현을 표준화하려는 **Composite Schemas** 명세 작업도 GraphQL Foundation에서 진행 중이다.
+- 서비스가 몇 개 안 된다면, 하나의 GraphQL 서버가 내부에서 여러 서비스를 호출하는 **BFF(Backend For Frontend)** 구조가 더 단순하다.
+
+cf. [MSA](/backend/msa)
+
+---
+
+## 8. 개발 도구
+
+| 도구                                                   | 용도                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| GraphiQL, Apollo Sandbox                               | 브라우저에서 스키마 탐색, 쿼리 작성·실행                     |
+| [GraphQL Code Generator](https://the-guild.dev/graphql/codegen) | 스키마·쿼리에서 TS 타입, resolver 타입, 클라이언트 훅 자동 생성 |
+| gql.tada                                               | 코드 생성 없이 TS 타입 추론으로 쿼리 결과 타입 제공          |
+| GraphQL Inspector, Hive, Apollo GraphOS                | 스키마 변경 이력 관리, **호환성이 깨지는 변경 감지**, 사용량 분석 |
+| VS Code GraphQL 확장                                   | `.graphql` 파일 자동 완성·검증                               |
+
+- 스키마를 바꿀 때는 **필드 삭제·타입 변경처럼 기존 클라이언트를 깨는 변경** 을 CI에서 자동으로 감지하는 것이 좋다.
+- 필드를 없애야 할 때는 바로 지우지 말고 `@deprecated(reason: "newField를 사용하세요")`로 먼저 알린다.
+
+---
+
+## 9. 언제 GraphQL을 쓸까?
+
+**잘 맞는 경우**
+
+- 웹·iOS·안드로이드처럼 **클라이언트 종류가 여러 개** 이고, 화면마다 필요한 데이터가 다를 때
+- 데이터 사이의 **관계가 복잡하고 중첩 조회가 많을 때** (SNS, 커머스, 대시보드)
+- 여러 백엔드 서비스·외부 API를 **하나의 API로 묶어** 프론트엔드에 제공하고 싶을 때
+- 프론트엔드 팀이 백엔드 수정 없이 필요한 필드를 골라 쓰게 하고 싶을 때
+
+**과할 수 있는 경우**
+
+- 화면이 단순한 CRUD 위주의 작은 서비스
+- 파일 다운로드·스트리밍 위주의 API
+- 외부에 공개하는 단순한 API (REST가 더 익숙하고 캐싱이 쉬움)
+- 팀에 GraphQL 경험이 없고 일정이 촉박할 때 (N+1, 보안, 캐싱을 직접 챙겨야 함)
+- 프론트·백엔드가 모두 TypeScript인 풀스택 프로젝트라면 **tRPC** 나 **서버 컴포넌트 + Server Actions** 가 더 단순할 수 있다.
+
+> REST와 GraphQL은 경쟁 관계라기보다 선택지다. 한 서비스에서 **외부 공개는 REST, 내부 앱은 GraphQL** 처럼 함께 쓰는 경우도 많다.
+
+---
+
+## 10. 함께 보면 좋은 글
+
+- 클라이언트에서 GraphQL 쓰기 : [Data Fetching 라이브러리 - GraphQL 클라이언트](/frontend/data-fetching), [Apollo Client](/frontend/apollo-client/apollo)
+- NestJS로 GraphQL 서버 만들기 : [NestJS 소개](/backend/nestjs/01-intro)
+- ORM : [Prisma](/backend/prisma)
+
+---
+
+## 참고
+
+- [GraphQL 공식 문서](https://graphql.org/learn/), [GraphQL 한국어 문서](https://graphql-kr.github.io/learn/)
+- [GraphQL 명세 (Spec)](https://spec.graphql.org/)
+- [GraphQL over HTTP 명세](https://graphql.github.io/graphql-over-http/)
+- [Apollo Server](https://www.apollographql.com/docs/apollo-server), [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server), [Pothos](https://pothos-graphql.dev/)
+- [DataLoader](https://github.com/graphql/dataloader)
+- [Relay - Cursor Connections 명세](https://relay.dev/graphql/connections.htm)
+- [Apollo Federation](https://www.apollographql.com/docs/graphos/schema-design/federated-schemas/federation)
+- [GraphQL Code Generator](https://the-guild.dev/graphql/codegen)
+- [Production Ready GraphQL - Marc-André Giroux](https://book.productionreadygraphql.com/)

@@ -3,7 +3,7 @@ export default {
   'all-posts-link': { title: '📚 전체 글', href: '/posts' },
   'tags-link': { title: '🏷️ 태그', href: '/tags' },
   index: 'Backend 로드맵',
-  'select-lang': '백엔드 언어 선택',
+  'select-lang': '백엔드 언어·프레임워크 선택',
   '-- (1) Node 백엔드 --': {
     type: 'separator',
     title: '(1) Node 백엔드',
