@@ -3,6 +3,7 @@ import { useMDXComponents as getMDXComponents } from '../../mdx-components'
 import Link from 'next/link'
 import { getLastUpdated } from '../../lib/last-updated'
 import { normalizeTags } from '../../components/tags'
+import { RelatedPosts } from '../../components/related-posts'
 
 export const generateStaticParams = generateStaticParamsFor('mdxPath')
 
@@ -63,6 +64,7 @@ export default async function Page(props: PageProps) {
         </header>
       )}
       <MDXContent {...props} params={params} />
+      {showHeader && <RelatedPosts route={'/' + (params.mdxPath ?? []).join('/')} />}
     </Wrapper>
   )
 }

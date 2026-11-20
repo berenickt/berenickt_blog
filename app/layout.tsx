@@ -67,7 +67,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           footer={footer}
           pageMap={await getPageMap()}
           search={<Search placeholder='검색어를 입력해주세요.' />}
-          navigation={{ prev: true, next: true }}
+          // 이전/다음 글 링크 대신 글 하단에 같은 분류의 글 그리드를 보여준다 (components/related-posts.tsx)
+          navigation={false}
           sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
           // 테마 전환은 헤더의 ThemeToggle 이 담당 (사이드바 하단 기본 선택기 숨김)
           darkMode={false}
