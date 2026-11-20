@@ -1,36 +1,203 @@
 ---
-title: '11-Github 단축키, 프로필, 커밋 전략'
+title: '11-GitHub 활용 팁 - 단축키, 프로필, 커밋 메시지'
 date: 2023/01/11
-tags: [DevOps, Git]
+tags: [DevOps, Git, GitHub]
 ---
 
-## 1. GitHub 꾸미기
+## 1. GitHub 단축키
 
-- https://blog.cowkite.com/blog/2102241544/
-- Dream Coding Profile : https://youtu.be/w9DfC2BHGPA
+GitHub 웹사이트에서도 키보드 단축키로 빠르게 이동할 수 있다. (입력창에 커서가 없을 때 동작한다)
+
+### 1.1 어디서나
+
+| 단축키                         | 기능                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| `/` 또는 `S`                   | 검색창으로 이동                                              |
+| `Ctrl + K` (Mac : `Cmd + K`)   | **명령 팔레트** : 저장소·파일·PR 바로 이동, `>` 입력 시 명령 실행 (새 저장소 만들기 등) |
+| `?`                            | 현재 페이지에서 쓸 수 있는 **단축키 목록** 보기              |
+| `G` → `N`                      | 알림(Notifications)으로 이동                                 |
+| `G` → `D`                      | 대시보드로 이동                                              |
+
+### 1.2 저장소 안에서
+
+| 단축키      | 기능                                                                       |
+| ----------- | -------------------------------------------------------------------------- |
+| `T`         | **파일 찾기** : 파일 이름을 입력해 바로 이동 (방향키로 선택)               |
+| `W`         | 브랜치·태그 전환                                                           |
+| `G` → `C`   | Code 탭으로 이동                                                           |
+| `G` → `I`   | Issues 탭으로 이동                                                         |
+| `G` → `P`   | Pull requests 탭으로 이동                                                  |
+| `G` → `A`   | Actions 탭으로 이동                                                        |
+| **`.`**     | **github.dev 웹 에디터** 열기 : 브라우저에서 VS Code처럼 코드 보기·수정    |
+
+### 1.3 파일을 볼 때
+
+| 단축키 | 기능                                                                                 |
+| ------ | ------------------------------------------------------------------------------------ |
+| `L`    | 원하는 **줄 번호로 이동**                                                            |
+| `B`    | **Blame** 보기 : 줄마다 누가, 언제, 어떤 커밋으로 바꿨는지                            |
+| `Y`    | URL을 **특정 커밋 기준의 고정 링크(permalink)** 로 바꾸기 → 코드가 바뀌어도 링크한 줄이 그대로 유지돼 공유할 때 유용 |
+
+> 💡 저장소 주소의 `github.com`을 **`github.dev`** 로 바꿔도 웹 에디터가 열린다.
 
 ---
 
-## 2. Github 내 이동 명령어
+## 2. 프로필 꾸미기
 
-- Find Mode : `/`
-  - 검색창이 눌려짐
-- File Finder : `T`
-  - 파일 탐색 모드가 시작됨
-  - 방향키로 탐색 가능
-- Command Paletee :
-  - Window : `Ctrl + K`
-  - Mac : `Command  + K`
-  - 더 세부적인 repository를 알고싶다면, repository로 키보드로 이동해서 `Tab 키`
-  - `>`누르면 새로운 repository 생성 등 가능
-- Jump to a Line : `L`
-  - 이동할 라인 선택
-- Keyboard Shortcus : `?`
-  - 어떤 단축키가 있는지 확인
+GitHub 프로필은 개발자의 **이력서이자 포트폴리오** 다. 채용 담당자가 가장 먼저 보는 곳 중 하나이기도 하다.
+
+### 2.1 기본 정보
+
+- **프로필 사진, 이름, 한 줄 소개(bio)**, 블로그·연락처 링크
+- **Pinned repositories** : 대표 프로젝트를 최대 6개까지 프로필 상단에 고정 → 가장 자신 있는 프로젝트를 고르자.
+- 고정한 저장소마다 **README** 를 잘 써 두자. (무엇을 만들었는지, 기술 스택, 실행 방법, 스크린샷, 배포 링크)
+
+### 2.2 프로필 README
+
+**내 아이디와 같은 이름의 공개 저장소** 를 만들고 `README.md`를 작성하면, 그 내용이 **프로필 맨 위에 표시** 된다.
+
+```
+github.com/아이디/아이디   ← 이 저장소의 README.md가 프로필에 보인다
+```
+
+예시
+
+```md
+## 안녕하세요, 프론트엔드 개발자 홍길동입니다 👋
+
+- 🔭 지금은 Next.js와 TypeScript로 사이드 프로젝트를 만들고 있어요.
+- 📝 블로그 : https://example.com
+- 📫 연락처 : hello@example.com
+
+### Tech Stack
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=nextdotjs&logoColor=white)
+```
+
+자주 쓰는 꾸미기 도구
+
+- **[Shields.io](https://shields.io/)** : 기술 스택·링크용 **배지** 이미지
+- **[github-readme-stats](https://github.com/anuraghazra/github-readme-stats)** : 커밋 수, 사용 언어 비율 등 **통계 카드**
+- **잔디(contribution graph) 애니메이션** : 기여 그래프를 뱀이 먹는 애니메이션 등 (GitHub Actions로 생성)
+- 블로그 최신 글 자동 표시 : RSS를 읽어 README를 갱신하는 GitHub Actions
+
+> 💡 꾸미기는 적당히! 화려한 위젯보다 **잘 정리된 Pinned 프로젝트와 README** 가 훨씬 중요하다.
+> 잔디를 채우려고 의미 없는 커밋을 매일 하는 것보다, 의미 있는 프로젝트를 꾸준히 하는 것이 낫다.
+
+참고 자료
+
+- [GitHub 프로필 꾸미기 (cowkite 블로그)](https://blog.cowkite.com/blog/2102241544/)
+- [드림코딩 - GitHub 프로필 꾸미기 (YouTube)](https://youtu.be/w9DfC2BHGPA)
+- [GitHub Docs - 프로필 README 관리](https://docs.github.com/ko/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme)
 
 ---
 
-## 3. Git 커밋 메시지
+## 3. 좋은 커밋 메시지
 
+커밋 메시지는 **미래의 나와 동료에게 보내는 편지** 다.
+몇 달 뒤 `git log`나 `git blame`으로 "이 코드는 왜 이렇게 바뀌었지?"를 찾을 때, 커밋 메시지가 유일한 단서인 경우가 많다.
+
+```
+❌ 나쁜 예                    ✅ 좋은 예
+수정                          로그인 실패 시 에러 메시지가 안 보이던 문제 수정
+ㅇㅇ                          회원가입 폼에 이메일 형식 검증 추가
+final                         결제 금액 계산 시 쿠폰 할인 중복 적용 방지
+asdf                          README에 로컬 실행 방법 추가
+```
+
+### 3.1 커밋 메시지 7가지 규칙
+
+널리 알려진 규칙(Chris Beams, "How to Write a Git Commit Message")을 정리하면 다음과 같다.
+
+1. **제목과 본문을 빈 줄로 구분** 한다.
+2. 제목은 **50자 이내** 로 짧게
+3. (영어) 제목의 첫 글자는 대문자로
+4. 제목 끝에 **마침표를 찍지 않는다.**
+5. 제목은 **명령문** 으로 (영어 : `Add`, `Fix` / 한국어 : `~ 추가`, `~ 수정`처럼 간결하게)
+6. 본문은 한 줄에 **72자 정도에서 줄바꿈** 한다.
+7. 본문에는 **"어떻게"보다 "무엇을, 왜"** 바꿨는지 쓴다. (어떻게는 코드에 있다)
+
+```
+쿠폰 할인 중복 적용 방지
+
+같은 주문에 쿠폰을 여러 번 적용할 수 있어서
+결제 금액이 음수가 되는 문제가 있었다.
+주문당 쿠폰은 하나만 적용되도록 검증을 추가했다.
+
+Closes #42
+```
+
+- 짧은 커밋은 `git commit -m "제목"`, 본문까지 쓰려면 `git commit`으로 에디터를 열어 작성한다.
+
+### 3.2 Conventional Commits
+
+팀에서 가장 많이 쓰는 커밋 메시지 **형식 규칙** 이다.
+
+```
+<타입>(<범위>): <제목>
+
+feat(cart): 장바구니 수량 변경 기능 추가
+fix(auth): 토큰 만료 시 무한 리다이렉트 수정
+docs: README에 환경 변수 설명 추가
+```
+
+| 타입         | 의미                                              |
+| ------------ | ------------------------------------------------- |
+| `feat`       | 새 기능                                           |
+| `fix`        | 버그 수정                                         |
+| `docs`       | 문서 수정                                         |
+| `style`      | 코드 의미에 영향 없는 변경 (포매팅, 세미콜론 등)  |
+| `refactor`   | 기능 변화 없이 코드 구조 개선                     |
+| `perf`       | 성능 개선                                         |
+| `test`       | 테스트 추가·수정                                  |
+| `build`      | 빌드 설정, 의존성 변경                            |
+| `ci`         | CI 설정 변경 (GitHub Actions 등)                  |
+| `chore`      | 그 밖의 잡일 (설정 파일 등)                       |
+
+- 하위 호환이 깨지는 변경은 `feat!:` 처럼 `!`를 붙이거나, 본문에 `BREAKING CHANGE:`를 적는다.
+- 장점
+  - 커밋 목록만 봐도 **변경의 종류를 바로 알 수 있다.**
+  - 커밋 메시지로 **변경 기록(CHANGELOG)과 버전 번호를 자동 생성** 할 수 있다. (`feat` → 부 버전 올림, `fix` → 수 버전 올림 / e.g. release-please, semantic-release)
+- 규칙을 강제하고 싶다면 **commitlint + husky** 로 커밋할 때 메시지 형식을 자동 검사한다.
+- 이모지로 타입을 표시하는 **gitmoji** (✨ 새 기능, 🐛 버그 수정…) 규칙을 쓰는 팀도 있다.
+
+### 3.3 커밋 단위
+
+- **하나의 커밋 = 하나의 목적** : 버그 수정과 새 기능, 포매팅 변경을 한 커밋에 섞지 않는다.
+- 커밋 하나만 되돌려도(revert) 깔끔하게 취소될 정도의 크기가 좋다.
+- 작업 중에 커밋이 지저분해졌다면, PR을 올리기 전에 `git rebase -i`로 정리하거나 **Squash and merge** 로 합친다. → [04-브랜치를 합치는 4가지 방법](/devops/git/04-merge)
+
+> 💡 팀에서 가장 중요한 건 **같은 규칙을 함께 지키는 것** 이다. 규칙을 정했다면 README나 `CONTRIBUTING.md`에 적어 두자.
+
+참고 자료
+
+- [Chris Beams - How to Write a Git Commit Message](https://cbea.ms/git-commit/)
+- [Conventional Commits (한국어)](https://www.conventionalcommits.org/ko/v1.0.0/)
 - [joelparkerhenderson/git-commit-message](https://github.com/joelparkerhenderson/git-commit-message)
-- [커밋 메시지 가이드](https://github.com/RomuloOliveira/commit-messages-guide/blob/master/README_ko-KR.md)
+- [커밋 메시지 가이드 (한국어)](https://github.com/RomuloOliveira/commit-messages-guide/blob/master/README_ko-KR.md)
+
+---
+
+## 4. 정리
+
+| 하고 싶은 것                               | 방법                                                 |
+| ------------------------------------------ | ---------------------------------------------------- |
+| 저장소 파일 빠르게 찾기                    | `T`                                                  |
+| 어디서나 바로 이동·명령 실행               | `Ctrl/Cmd + K`                                       |
+| 브라우저에서 코드 편집                     | `.` (github.dev)                                     |
+| 특정 줄을 고정 링크로 공유                 | `L`로 줄 선택 → `Y`                                  |
+| 단축키 전체 보기                           | `?`                                                  |
+| 프로필 첫 화면 꾸미기                      | `아이디/아이디` 저장소의 `README.md`                 |
+| 대표 프로젝트 보여 주기                    | Pinned repositories + 좋은 README                    |
+| 커밋 메시지 형식                           | `타입(범위): 제목` (Conventional Commits)            |
+
+이것으로 Git & GitHub 시리즈를 마친다. 처음부터 다시 보려면 → [Git & GitHub 소개와 버전 관리의 역사](/devops/git)
+
+---
+
+## 참고
+
+- [GitHub Docs - 키보드 단축키](https://docs.github.com/ko/get-started/accessibility/keyboard-shortcuts)
+- [GitHub Docs - 명령 팔레트](https://docs.github.com/ko/get-started/accessibility/github-command-palette)
+- [GitHub Docs - github.dev 웹 기반 편집기](https://docs.github.com/ko/codespaces/the-githubdev-web-based-editor)

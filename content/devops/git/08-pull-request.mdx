@@ -1,130 +1,268 @@
 ---
-title: '08-Github branch로 협업-pull request'
+title: '08-Pull Request로 협업하기 - 브랜치, 코드 리뷰, merge'
 date: 2023/01/11
-tags: [DevOps, Git]
+tags: [DevOps, Git, GitHub]
 ---
 
-# 1. 신기능 개발하려고 branch
+## 1. 왜 Pull Request인가?
 
-신기능을 만들고 싶으면 main 브랜치에 코드짜다가 프로젝트 망치지 말고,
-다른 브랜치를 만들어서 거기에 개발하는 것도 안전하고 좋다고 했습니다.
+새 기능은 main 브랜치에서 바로 개발하다 프로젝트를 망치지 말고, **브랜치를 만들어서 개발** 하는 게 안전하다고 했다. (→ [03-브랜치](/devops/git/03-branch-merge))
+브랜치에서 기능을 완성했으면 main에 합쳐야 한다. 혼자라면 `git merge` 후 `git push`로 끝이지만, 팀에서는 **합치기 전에 함께 검토하고 토론** 해야 하는 경우가 많다.
 
-원격 repository (저장소)에도 브랜치를 만들 수 있습니다. 브랜치 생성하려면
+그래서 GitHub에는 **Pull Request(PR)** 라는 기능이 있다.
 
-1. **github.com에서 브랜치** 직접 만들어도 되고
-1. 아니면 **로컬에서 만든 브랜치를 올려도** 브랜치생성이 가능합니다.
+- 쉽게 말해 **"내 브랜치를 main에 합쳐(merge) 주세요"라는 요청** 이다. (GitLab에서는 이름 그대로 **Merge Request** 라고 부른다)
+- PR을 열면 팀원들이 **변경된 코드를 보고, 댓글로 리뷰하고, 승인** 한 뒤 merge한다.
+- 자동 테스트(CI) 결과, 관련 이슈, 토론 기록이 PR 한곳에 모인다.
 
----
-
-## 1.1 github 사이트에서 브랜치 생성
-
-main 브랜치명 버튼 누르면 브랜치를 바꾸하거나 새로 만들 수 있습니다. 심심하면 하나 만들어보거나 하면 됩니다.
+> 💡 이름이 왜 "pull" request일까?
+> 상대방(저장소 관리자)에게 **"내 브랜치의 변경을 당신 쪽으로 pull(가져가) 해 주세요"** 라고 요청한다는 관점에서 붙은 이름이다.
 
 ---
 
-## 1.2 로컬 repository에서 브랜치 생성
+## 2. 전체 흐름 (GitHub Flow)
 
-로컬저장소에서 브랜치생성해서 원격저장소로 `git push` 해도 됩니다.
-예를 들면, 지금 사이트를 하나 만들고 있는데 사이트 방문자들 컴퓨터에 몰래 비트코인 채굴기를 심는 기능을 만든다고 칩시다.
+```
+1. main 최신화        git switch main → git pull
+2. 브랜치 만들기      git switch -c feature/coupon
+3. 개발 & 커밋        git add → git commit (여러 번)
+4. 원격에 올리기      git push -u origin feature/coupon
+5. PR 열기            GitHub에서 Compare & pull request
+6. 코드 리뷰          댓글, 수정 요청, 승인 (+ CI 자동 테스트)
+7. 피드백 반영        수정 → 커밋 → push (PR에 자동 반영)
+8. merge             Squash and merge 등
+9. 정리               브랜치 삭제, 로컬 main 최신화
+```
+
+하나씩 따라가 보자.
+
+---
+
+## 3. 브랜치 만들고 올리기
+
+### 3.1 로컬에서 브랜치 만들어 push ✅
 
 ```bash
-# git clone으로 복사해온 작업폴더(GIT 장인3)에서 새 브랜치 생성
-git branch mining
-git switch mining
-
-# d 라는 폴더 만들어서 commit
-git add .
-git commit -m 'd 만들었음'
-
-# a파일 첫 번쨰 줄 수정
-git add .
-git commit -m 'a 수정'
-
-# ------------------------------------------
-# 충돌 일으키기
+# 1. main을 최신 상태로
 git switch main
+git pull
 
-# 메인 브랜치에서 a파일 첫 번쨰 줄 수정
+# 2. 기능 브랜치 만들기
+git switch -c feature/coupon
+
+# 3. 개발하고 커밋 (여러 번 해도 된다)
 git add .
-git commit -m 'a 수정2'
+git commit -m "쿠폰 입력 폼 추가"
+git add .
+git commit -m "쿠폰 할인 계산 로직 추가"
 
-# 로컬 브랜치를 원격에 올리고 싶으면
-# 📝 git push 원격저장소주소 로컬브랜치명
-git push origin mining
+# 4. 원격(GitHub)에 브랜치 올리기
+git push -u origin feature/coupon
 ```
 
-GitHub의 레포지토리에 가서, 새로고침해보면 mining 브랜치가 올라갑니다.
+- GitHub 저장소를 새로고침하면 `feature/coupon` 브랜치가 올라가 있다.
+- `git push`는 기본적으로 **현재 브랜치만** 올린다. 모든 로컬 브랜치를 한 번에 올리려면 `git push --all origin` (보통은 쓸 일이 거의 없다)
+
+### 3.2 GitHub 사이트에서 브랜치 만들기
+
+- 저장소 화면 왼쪽 위의 **브랜치 이름(main) 버튼** 을 누르면 브랜치를 바꾸거나 새로 만들 수 있다.
+- **이슈(Issue) 화면의 Development → Create a branch** 로 이슈와 연결된 브랜치를 만들 수도 있다.
+- 사이트에서 만든 브랜치는 `git fetch` → `git switch 브랜치이름`으로 내 컴퓨터에 가져와 작업한다. (→ [07-원격 브랜치](/devops/git/07-clone-pull))
 
 ---
 
-## 1.3 참고
+## 4. Pull Request 열기
 
-초급자은 특정 브랜치만 올리는 일이 잦습니다.
+1. 브랜치를 push하면 저장소 화면에 노란 배너와 **Compare & pull request** 버튼이 뜬다. (또는 **Pull requests** 탭 → **New pull request**)
+2. **어디에(base) ← 무엇을(compare)** 합칠지 확인한다.
+   - `base: main` ← `compare: feature/coupon`
+3. **제목과 설명** 을 작성한다.
+4. 아래쪽의 커밋 목록과 변경 내역(Files changed)을 확인하고 **Create pull request** 를 누른다.
+
+### 4.1 좋은 PR 설명
+
+```md
+## 무엇을 바꿨나요?
+- 결제 화면에 쿠폰 입력 폼 추가
+- 쿠폰 종류별 할인 금액 계산
+
+## 왜 바꿨나요?
+- 연말 프로모션 쿠폰 지원 (#12)
+
+## 어떻게 확인하나요?
+- 결제 화면에서 `WELCOME10` 입력 → 10% 할인 확인
+
+## 스크린샷
+(화면 변경이 있다면 첨부)
+
+Closes #12
+```
+
+- **`Closes #12`** 처럼 적으면 PR이 merge될 때 12번 이슈가 **자동으로 닫힌다.**
+- 저장소에 `.github/pull_request_template.md`를 만들어 두면 PR을 열 때마다 이 양식이 자동으로 채워진다.
+- 오른쪽 메뉴에서 **Reviewers(리뷰어)**, Assignees(담당자), Labels(라벨)를 지정한다.
+- 아직 작업 중이라면 **Draft pull request** 로 열어서 "검토 전 공유용"임을 표시할 수 있다.
+
+> 💡 **PR은 작게!** 변경이 수천 줄인 PR은 아무도 꼼꼼히 리뷰할 수 없다.
+> 기능 하나, 수백 줄 이내로 나누면 리뷰가 빨라지고 버그도 잘 잡힌다.
+
+---
+
+## 5. 코드 리뷰
+
+PR의 **Files changed** 탭에서 리뷰어가 변경된 코드를 보고 의견을 남긴다.
+
+- 코드 줄 옆 **`+`** 를 눌러 그 줄에 댓글을 단다.
+- **Suggestion(제안)** 기능으로 고칠 코드를 직접 제안하면, 작성자가 버튼 한 번으로 반영할 수 있다.
+- 리뷰를 마칠 때 셋 중 하나를 고른다.
+  - **Comment** : 의견만 남김
+  - **Approve** : 승인 (merge해도 좋다)
+  - **Request changes** : 수정이 필요함
+
+**피드백 반영** 은 같은 브랜치에 커밋하고 push하기만 하면 된다. **PR에 자동으로 추가** 된다.
 
 ```bash
-git push 원격저장소주소 로컬브랜치명 # 특정 로컬저장소 브랜치 -> 원격저장소
-git push 원격저장소주소 # 모든 로컬저장소 브랜치 -> 원격저장소
+# 리뷰 받은 내용 수정
+git add .
+git commit -m "리뷰 반영 : 할인 금액 소수점 처리"
+git push
+```
+
+리뷰 매너
+
+- 리뷰어 : 사람이 아니라 **코드** 에 대해 말하고, 이유와 대안을 함께 제시하자. 사소한 의견은 `nit:`(사소함)처럼 표시하면 좋다.
+- 작성자 : 리뷰는 나를 공격하는 게 아니라 **함께 더 좋은 코드를 만드는 과정** 이다. 반영했거나 반영하지 않는 이유를 댓글로 남기자.
+
+---
+
+## 6. CI와 충돌 확인
+
+- 저장소에 **GitHub Actions** 를 설정해 두면, PR을 열거나 push할 때마다 **테스트·린트·빌드가 자동으로 실행** 되고 결과(✅/❌)가 PR에 표시된다.
+- **This branch has conflicts that must be resolved** 메시지가 뜨면, PR 브랜치와 main이 같은 곳을 고친 것이다.
+  - 간단한 충돌은 GitHub 화면의 **Resolve conflicts** 버튼으로 해결할 수 있다.
+  - 복잡하다면 로컬에서 main을 받아 합친 뒤 push한다.
+
+```bash
+git switch feature/coupon
+git pull origin main     # main의 최신 변경을 내 브랜치에 합치기 (충돌 나면 해결 후 커밋)
+git push
 ```
 
 ---
 
-# 3. Pull request
+## 7. Merge하기
 
-브랜치만들면 뭐합니까. 그걸 main 브랜치와 합쳐야 기능이 완성되지 않겠습니까.
-합치려면 `git merge` 명령어로 합치고 `git push`하면 끝인데,
-팀끼리 일하는 경우 merge하기 전에 토론하거나 검토하거나 그래야하는 경우가 많습니다.
-그래서 github.com은 **pull request**라는 기능이 있습니다. 그냥 쉬운 말로 **merge request**입니다.
+리뷰 승인과 CI 통과가 끝났으면 PR 하단의 **Merge** 버튼을 누른다. 버튼 옆 화살표로 세 가지 방법을 고를 수 있다.
 
-이거 누르면 내 브랜치좀 merge 해달라는 요청을 할 수 있고, 팀원끼리 merge전에 코드검토가 가능합니다.
-github.com 웹사이트에서 pull request를 열고 싶으면
+| 버튼                      | 동작                                                                         | main의 이력                                   |
+| ------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------- |
+| **Create a merge commit** | 3-way merge로 **merge 커밋** 을 새로 만든다                                  | 브랜치의 커밋이 모두 보이고, 그래프에 갈래가 남음 |
+| **Squash and merge** ✅   | 브랜치의 커밋을 **하나로 합쳐** main에 새 커밋 1개 생성                      | 한 줄로 깔끔, **PR 하나 = 커밋 하나**         |
+| **Rebase and merge**      | 브랜치 커밋들을 main 최신 커밋 뒤로 옮겨(rebase) 그대로 붙임                 | 한 줄로 깔끔, 브랜치의 커밋이 **모두 보존**   |
 
-- 아무나 상단 Pull requests 메뉴에서 초록버튼 누르면 pull request 생성이 가능
-- 그 다음 어떤 브랜치를 어디에 합칠 것인지 선택하고, 하단 commit·변경내역을 보고, 초록버튼 누르면 pull request가 열림
-- 그럼 Pull requests 메뉴에서 이렇게 확인가능한데, 누르면 토론할 수 있는 곳도 있습니다.
-  - 거기서 코드 리뷰하면 됨
-- 잘 된것 같아 merge하기로 했으면, merge 할 때 여러 옵션이 있는데 택하면 됩니다.
-  - 이번에는 Squash and mege해보겠습니다.
+- `git log --oneline --graph`로 보면 merge commit 방식만 브랜치 갈래가 그래프에 나타난다.
+- 많은 팀이 **Squash and merge** 를 기본으로 쓴다. 각 방식의 원리는 [04-브랜치를 합치는 4가지 방법](/devops/git/04-merge) 참고
 
-이제 mining에서 만든 코드가 잘 통합(merge = pull request)된 것을 볼 수 있습니다.
+### 7.1 merge 후 정리
 
----
+1. PR 화면의 **Delete branch** 버튼으로 원격 브랜치를 삭제한다. (저장소 설정에서 **Automatically delete head branches** 를 켜 두면 자동 삭제)
+2. 내 컴퓨터도 최신화하고 다 쓴 브랜치를 지운다.
 
-## 3.1 create a merge commit
-
-새로운 merge commit을 하나 생성해주는 3-way merge를 실행해줍니다.
-
-- **main 브랜치 조회 시 합쳐진 브랜치의 commit 내역도** 전부 나옴
-- 터미널에 `git log --oneline --graph` 해보면 **합쳐진 브랜치도 그림으로 나옴**
-- 그래서 commit 내역이 많으면 복잡하고 더러워보일 수 있습니다.
+```bash
+git switch main
+git pull                        # merge된 결과 받아 오기
+git branch -D feature/coupon    # squash merge했다면 -d가 거부되므로 -D
+git fetch --prune               # 원격에서 삭제된 브랜치 정보 정리
+```
 
 ---
 
-## 3.2 squash and merge
+## 8. merge한 PR을 되돌리고 싶다면
 
-- **합쳐질 브랜치의 commit 내역을 하나로 합쳐서 main 브랜치에 신규 commit을 생성**해줍니다.
-- `git log --oneline --graph`해보면 **합쳐진 브랜치 안나옴**
-- commit을 하나로 합쳐서 main 브랜치로 순간이동 시켜주는 행위라 **사람들이 깔끔하다고 좋아합니다**.
-
----
-
-## 3.3 rebase and merge
-
-- **합쳐질 브랜치를 main 브랜치 최신 commit으로 rebase하고나서 fast-forward merge** 비슷한걸 해줍니다.
-- 결과는 **squash and merge와 비슷한데 합쳐질 브랜치의 commit 내역이 전부 보존**됩니다.
-- 애도 `git log --oneline --graph` 해보면 **합쳐진 브랜치 안나옴**
+- merge된 PR 화면의 **Revert** 버튼을 누르면, 그 PR의 변경을 취소하는 **새 PR** 이 만들어진다. 이것을 merge하면 된다.
+- 원격의 main을 과거로 되돌리려고 로컬에서 `git reset --hard` 후 `git push -f` 하는 것은 **하지 말자.** 같은 브랜치로 작업하는 모든 사람이 영향을 받는다.
+- 공유된 이력은 **revert로 "취소 기록"을 남기며** 되돌리는 것이 원칙이다. → [05-실수 되돌리기](/devops/git/05-revert-reset-restore)
 
 ---
 
-# 4. 결론
+## 9. 권한이 없는 저장소에 PR 보내기 : Fork
 
-- github 등 원격 저장소에도 브랜치만들 수 있습니다.
-- Pull request (merge)할 땐 3개 중 맘대로 하면 됩니다.
+오픈소스 프로젝트처럼 **push 권한이 없는 저장소** 에 기여할 때는 Fork를 사용한다.
+
+```
+원본 저장소 (upstream)  ──Fork──▶  내 계정의 복사본 (origin)  ──clone──▶  내 컴퓨터
+        ▲                                                                   │
+        └──────────────────── Pull Request ◀─── push ───────────────────────┘
+```
+
+1. 원본 저장소에서 **Fork** 버튼 → 내 계정에 복사본이 생긴다.
+2. 내 복사본을 clone하고, 브랜치를 만들어 작업한 뒤 **내 복사본에 push** 한다.
+3. GitHub에서 **원본 저장소로 PR** 을 연다.
+4. 원본의 최신 변경을 받으려면 원본을 `upstream`으로 등록해 둔다. (또는 GitHub의 **Sync fork** 버튼)
+
+```bash
+git remote add upstream https://github.com/원본계정/원본저장소.git
+git fetch upstream
+git switch main
+git merge upstream/main
+```
 
 ---
 
-# 5. 참고 : revert 쓰지말기
+## 10. 더 알아 두면 좋은 것
 
-원격저장소의 commit 내역을 과거로 되돌리고 싶으면,
-로컬에서 `git reset --hard` 이런거 쓰고, `git push -f` 하면 가능하긴 한데,
-해당 브랜치를 공동작업중인 사람들이 모두 영향받기 때문에 그러지 않는 게 좋습니다.
-github.com 사이트엔 revert 버튼이 있긴 한데, 그거 쓰면 예전 코드로 되돌려주는 commit을 만들어주는 식으로 동작합니다.
+### 10.1 브랜치 보호 규칙
+
+저장소 **Settings → Branches(또는 Rules)** 에서 main 브랜치에 규칙을 걸 수 있다.
+
+- PR을 거치지 않은 **직접 push 금지**
+- merge 전 **최소 N명의 승인** 필수
+- **CI 통과** 필수
+- 강제 push(force push) 금지
+
+→ 실수로 main을 망가뜨리는 일을 막아 준다.
+
+### 10.2 GitHub CLI로 PR 다루기
+
+```bash
+gh pr create --fill          # 현재 브랜치로 PR 만들기 (커밋 메시지로 제목·설명 채움)
+gh pr list                   # PR 목록
+gh pr checkout 42            # 42번 PR 브랜치를 내 컴퓨터로 가져와 확인
+gh pr merge 42 --squash --delete-branch
+```
+
+### 10.3 AI 코드 리뷰
+
+- GitHub Copilot 등 AI가 PR 내용을 요약하거나 1차 리뷰를 해 주는 기능이 많이 쓰인다.
+- AI 리뷰는 놓치기 쉬운 실수를 잡는 데 유용하지만, **최종 판단과 승인은 사람이** 하자.
+
+---
+
+## 11. 정리
+
+| 단계              | 명령어 / 위치                                         |
+| ----------------- | ----------------------------------------------------- |
+| 브랜치 만들기     | `git switch -c feature/이름`                          |
+| 원격에 올리기     | `git push -u origin feature/이름`                     |
+| PR 열기           | GitHub **Compare & pull request** / `gh pr create`    |
+| 리뷰 반영         | 커밋 → `git push` (PR에 자동 반영)                    |
+| 충돌 해결         | `git pull origin main` → 해결 → `git push`            |
+| merge             | GitHub **Merge** 버튼 (Squash and merge 등)           |
+| 정리              | 원격 브랜치 삭제 → `git switch main` → `git pull` → `git branch -D` |
+| 되돌리기          | merge된 PR의 **Revert** 버튼                          |
+
+- 원격 저장소에도 브랜치를 만들 수 있고, **PR은 "merge 전에 함께 검토하는 장소"** 다.
+- merge 방법은 세 가지가 있으며, 팀이 정한 규칙을 따르면 된다.
+
+다음 글에서는 브랜치를 언제, 어떻게 나눌지 정하는 **브랜치 전략** 을 배운다. → [09-브랜치 전략](/devops/git/09-flow-trunk-based)
+
+---
+
+## 참고
+
+- [코딩애플 Git 강의](https://codingapple.com/course/git-and-github/)를 듣고 정리한 내용입니다.
+- [GitHub Docs - Pull Request 정보](https://docs.github.com/ko/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
+- [GitHub Docs - Pull Request 리뷰](https://docs.github.com/ko/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews)
+- [GitHub Docs - 키워드로 이슈 연결](https://docs.github.com/ko/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue)
+- [GitHub Docs - Fork로 기여하기](https://docs.github.com/ko/get-started/exploring-projects-on-github/contributing-to-a-project)
+- [GitHub CLI - gh pr](https://cli.github.com/manual/gh_pr)

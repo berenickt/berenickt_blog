@@ -1,160 +1,229 @@
 ---
-title: '05-복구-revert, reset, restore'
+title: '05-실수 되돌리기 - restore, revert, reset'
 date: 2023/01/11
 tags: [DevOps, Git]
 ---
 
-# 1. 파일 복구하는 법
+## 1. 한눈에 보기
 
-git은 버전관리 프로그램이기 때문에,
-언제든지 이전 commit으로 되돌아가거나, 문제가 되는 commit 내역을 취소하거나 그럴 수 있습니다.
+Git은 버전 관리 프로그램이라, 언제든 **이전 상태로 돌아가거나, 문제가 된 커밋을 취소** 할 수 있다.
+되돌리는 대상에 따라 쓰는 명령어가 다르다.
 
-- `git restore` : 파일 하나 복구
-- `git revert` : commit 복구
-- `git reset` : 시간 되돌리기
+| 명령어          | 되돌리는 대상                       | 비유                         | 이력(커밋)              | 협업 중 사용 |
+| --------------- | ----------------------------------- | ---------------------------- | ----------------------- | ------------ |
+| **git restore** | **파일** (아직 커밋 안 한 수정)     | 파일 하나 Ctrl+Z             | 변화 없음               | ✅           |
+| **git revert**  | **커밋 하나** 의 변경 내용          | 취소 내용을 적은 정정 기사   | 취소 커밋이 **새로 추가** | ✅ 안전      |
+| **git reset**   | **브랜치 전체** 를 과거 커밋으로    | 타임머신                     | 이후 커밋이 **사라짐**  | ⚠️ 주의      |
 
 ---
 
-## 1.1 새 프로젝트 생성
+### 1.1 실습 준비
 
-깔끔한 상태에서 시작하기 위해 새 작업폴더 만들어서 다시 시작합시다.
-새 작업폴더에서 `git init`하고 commit 몇 번 해봅시다. 저는 파일 3개 만들고 만들 때 마다 commit 합니다.
+깔끔한 상태에서 시작하기 위해 새 폴더를 만들고, 파일을 하나씩 만들며 커밋해 보자.
 
 ```bash
-# Git장인2 라는 새 폴더 생성 후 이동
+mkdir git-practice && cd git-practice
 git init
 
-# commit 3번 정도
-# a파일 만들고 commit
-git add .
-git commit -m 'a파일 생성'
+# a 파일 만들고 커밋
+echo "a" > a.txt
+git add . && git commit -m "a 파일 생성"
 
-# b파일 만들고 commit
-git add .
-git commit -m 'b파일 생성'
+# b 파일 만들고 커밋
+echo "b" > b.txt
+git add . && git commit -m "b 파일 생성"
 
-# c파일 만들고 commit
-git add .
-git commit -m 'c파일 생성'
+# c 파일 만들고 커밋
+echo "c" > c.txt
+git add . && git commit -m "c 파일 생성"
 
-# 여러분의 commit 내역을 한 줄로 이쁘게 보여줌
 git log --oneline
 ```
 
-노란 문자들은 **commit의 고유 id** 입니다. 고유 id를 이용해야 "그 고유 id로 되돌려주세요~" 이런 명령들이 가능합니다.
+```
+5e6f7a8 (HEAD -> main) c 파일 생성
+3c4d5e6 b 파일 생성
+1a2b3c4 a 파일 생성
+```
+
+- 앞의 `5e6f7a8` 같은 문자열이 **커밋 ID** 다. "이 커밋으로 되돌려 줘" 같은 명령은 이 ID로 한다. (실습할 때는 자기 화면에 나온 ID를 쓰자)
+- 커밋 ID 대신 **`HEAD~1`(한 단계 전), `HEAD~2`(두 단계 전)** 처럼 상대적인 위치로 가리킬 수도 있다.
 
 ---
 
-# 2. git restore : 파일 하나 복구
+## 2. git restore : 파일 되돌리기
 
-파일 하나가 잘못되었을 경우 ctrl + z 여러번 눌러도 되겠지만, 수정사항이 너무 많다면 명령어 하나로 처리할 수 있습니다.
+파일 하나가 잘못되었을 때, Ctrl+Z를 여러 번 눌러도 되지만 수정한 곳이 많다면 명령어 하나로 처리할 수 있다.
 
 ```bash
-# c폴더의 내용을 아무렇게나 수정
+# c.txt를 아무렇게나 수정한 뒤
 
-# 최근 commit 된 상태로 현재 파일의 수정내역을 되돌리기
-# 📝 git restore 파일명
-git restore c
+# 마지막 커밋 상태로 되돌리기 (수정한 내용은 버려짐 ⚠️)
+git restore c.txt
 
-# 입력한 파일이 특정 커밋아이디 시점으로 복구
-# 📝 git restore --source 커밋아이디 파일명
-git restore --source (자기 b파일 커밋 아이디) b
+# 특정 커밋 시점의 내용으로 파일 되돌리기
+git restore --source 3c4d5e6 b.txt     # b 파일을 'b 파일 생성' 커밋 시점으로
+git restore --source HEAD~2 b.txt      # 상대 위치로도 가능
 
-# 복구랑 상관없지만 이러면 특정 파일을 staging 취소
-# 📝 git restore --staged 파일명
-git restore --staged c
+# 스테이징만 취소 (수정 내용은 그대로 남음)
+git restore --staged c.txt
 ```
+
+- `git restore 파일`로 버린 수정 내용은 **커밋한 적이 없으므로 되살릴 수 없다.** 신중하게 쓰자.
+- 예전에는 `git checkout -- 파일명`, `git reset HEAD 파일명`으로 같은 일을 했다. 지금은 역할이 분명한 `git restore`를 권장한다.
 
 ---
 
-# 3. git revert : commit 복구
+## 3. git revert : 커밋 취소하기 (기록을 남기며)
 
-commit 하나를 취소하고 싶으면 `git revert` 사용하면 됩니다.
-실은 없애는건 아니고 commit 하나를 취소한 commit을 하나 생성해줍니다.
+커밋 하나에서 일어난 변경만 취소하고 싶으면 `git revert`를 쓴다.
+커밋을 지우는 게 아니라, **그 커밋의 변경을 정반대로 적용한 "취소 커밋"을 새로 만든다.**
 
 ```bash
-# 그 커밋아이디에서 일어난 일만 취소
-# git revert 커밋아이디
-git revert (자기 b파일 커밋 아이디)
+# 'b 파일 생성' 커밋에서 일어난 일만 취소
+git revert 3c4d5e6
 ```
 
-실행하면 아마 에디터가 뜰 텐데 맘대로 커밋메세지 수정하고 닫으면 끝입니다.
+```
+main  A───B───C───B'   ← B를 취소하는 새 커밋 (B는 기록에 그대로 남아 있음)
+```
 
 ![git_5_1](https://raw.githubusercontent.com/berenickt/image-server/main/img/git_5_1.png)
 
-revert 명령시 가끔 Vim 에디터가 뜨는 사람들이 있을겁니다.
-커밋 메세지 수정하라는건데 i 눌러서 수정하고 싶으면 하고, esc 눌러서 나올 수 있습니다.
-그리고 :wq 누르면 커밋 메세지가 저장됩니다.
-
-에디터 닫고나면, `git log --oneline`으로 확인하면, 새로운 커밋이 생성되고 b파일만 삭제되어있습니다.
-(그 커밋id 이후에 했던 파일이나 커밋들은 영향없이 유지됨)
-
-git log 다시 해보면 revert 해줬다는 commit이 자동으로 생성되어있고, 작업폴더에서 a, c 파일은 있지만 b 파일은 삭제됩니다.
-결론은 revert 명령어 쓰면 특정 커밋에서 있던 일을 지워버릴 수 있습니다.
-
----
-
-## 3.1 기타 명령어
+- 실행하면 커밋 메시지를 입력하는 에디터가 열린다. 기본 메시지(`Revert "b 파일 생성"`)를 그대로 두거나 고친 뒤, **저장하고 닫으면** 끝이다.
+  - Vim이 열렸다면 `i`로 수정 → `Esc` → `:wq`로 저장하고 나간다. (VS Code를 기본 에디터로 쓰는 설정은 [01-설치](/devops/git/01-git-install) 참고)
+- `git log --oneline`으로 확인하면 revert 커밋이 새로 생겼고, 작업 폴더에는 `a.txt`, `c.txt`만 남아 있다.
+- **그 커밋 이후에 한 작업(c 파일)은 영향 없이 그대로 유지** 된다.
 
 ```bash
-git revert 커밋아이디1 커밋아이디2 # revert 할 때 동시에 여러개의 commit id 입력가능
-git reverst HEAD # 그냥 최근 했던 commit 1개만 revert(취소)
-
-# merge 명령으로 인해 새로 만들어진 commit도 revert 가능
-# 그럼 merge가 취소되겠군요. 필요하면 찾아보셈
+git revert 커밋ID1 커밋ID2      # 여러 커밋을 한 번에 취소 (각각 revert 커밋 생성)
+git revert HEAD                 # 가장 최근 커밋 하나 취소
+git revert --no-edit HEAD       # 메시지 수정 창 없이 바로 취소
+git revert -m 1 merge커밋ID     # merge 커밋 취소 (-m 1 : 첫 번째 부모, 즉 main 쪽 기준으로 되돌림)
 ```
 
+> 💡 revert는 **이력을 지우지 않고 "취소했다"는 기록을 추가** 하기 때문에, 이미 GitHub에 올려서 **다른 사람과 공유한 커밋을 되돌릴 때 가장 안전한 방법** 이다.
+
 ---
 
-# 4. git reset : 시간 되돌리기
+## 4. git reset : 과거 시점으로 돌아가기
 
-git reset 명령어를 사용하면 **특정 commit 시절로 아예 모든걸 되돌릴 수 있습니다**.
+`git reset`은 **브랜치를 특정 커밋 시점으로 통째로 되돌린다.** 그 이후의 커밋은 브랜치 이력에서 사라진다.
 
 ```bash
-# 그 커밋이 생성될 때로 시간을 되돌려줌
-# 작업폴더 내의 파일도 그 시절로 돌아감
-# 📝 git reset --hard 커밋아이디
-git reset --hard (자기 b파일 커밋 아이디)
+# 'b 파일 생성' 커밋 시점으로 완전히 되돌림 (작업 폴더의 파일까지)
+git reset --hard 3c4d5e6
 
 git log --oneline
+# 3c4d5e6 (HEAD -> main) b 파일 생성
+# 1a2b3c4 a 파일 생성
+# → 'c 파일 생성' 커밋이 사라지고, c.txt 파일도 삭제됨
 ```
 
-- commit2로 `reset --hard`해버리면, commit2 이후의 미래 기억을 모두 잃습니다.
+```
+reset 전   main  A───B───C
+reset 후   main  A───B          ← C는 더 이상 브랜치에 없음
+```
 
-지금 기억을 다 포기하고 인생을 7살로 리셋해준다고 하면 돌아갈 것입니까?
-인생이 어느정도 궤도에 오른 사람들은 돌아가기 힘듭니다.
+> 지금까지의 기억을 다 포기하고 인생을 7살로 리셋해 준다면 돌아가겠는가?
+> 인생이 어느 정도 궤도에 오른 사람이라면 돌아가기 어렵다.
+>
+> 마찬가지로 `git reset --hard`는 **프로젝트가 망했을 때나, 아주 짧은 거리를 되돌아갈 때** 만 쓰자.
 
-마찬가지로 **git reset**은 그냥 **프로젝트 망하면 쓰거나, 아니면 짧은 거리를 돌아갈 때 쓰도록** 합시다.
+### 4.1 reset의 세 가지 옵션 : --soft, --mixed, --hard
 
----
+reset은 **되돌린 커밋들의 변경 내용을 어떻게 처리할지** 옵션으로 고를 수 있다.
+실습 상태(a, b, c를 각각 커밋)에서 `'b 파일 생성'` 커밋으로 reset하면, 사라지는 커밋은 `'c 파일 생성'` 하나다. 이 **c의 변경 내용** 이 옵션마다 다르게 남는다.
 
-## 4.1 협업 시 reset 사용금지
-
-- 여러명이서 협업하는 리포지토리에는 **보통 reset 쓰면 안 됩니다.** 갑자기 소스코드가 사라지는거니까요.
-- untracked 파일들은 (git add 안 해놓은 파일들은) 사라지지않고 유지됩니다.
-- git clean 명령어 찾아서 쓰면 untracked 파일들도 다 지울 수 있습니다.
-
----
-
-## 4.2 reset시 옵션 설정가능
-
-a, b, c 파일을 만들면서 각각 commit을 했다고 칩시다.
-git reset 뒤에 hard / soft / mixed 설정을 넣을 수 있는데
+| 옵션                   | 커밋 기록           | 스테이징 영역               | 작업 폴더 (실제 파일)     | 실습 결과                               |
+| ---------------------- | ------------------- | --------------------------- | ------------------------- | --------------------------------------- |
+| `--soft`               | b 시점으로 되돌림   | c의 변경이 **스테이징된 채** 남음 | 그대로 (a, b, c 있음) | 바로 다시 `git commit` 가능             |
+| `--mixed` (기본값)     | b 시점으로 되돌림   | 비움 (스테이징 취소)         | 그대로 (a, b, c 있음)     | `git add` 부터 다시 해야 함 (c는 untracked) |
+| `--hard`               | b 시점으로 되돌림   | 비움                        | **b 시점으로 되돌림** (c 삭제) | 변경 내용까지 모두 사라짐 ⚠️       |
 
 ```bash
-# 그 커밋이 생성될 때로 시간을 되돌려줌
-# 작업폴더 내의 파일도 그 시절로 돌아감
-git reset --hard (자기 b파일 커밋 아이디) # a, b파일은 남아있고 c 파일이 삭제
-
-# 📝 리셋인데 변동사항 지우지 말고 스테이징 해놓기
-git reset --soft (자기 b파일 커밋 아이디) # a, c파일은 남아있고 b 파일은 staging area에 남아있음
-# 이제 commit 하거나 그럴 수 있습니다.
-
-# 📝 리셋인데 변동사항 지우지 말고 unstage 해놓기
-git reset --mixed (자기 b파일 커밋 아이디) # a, c파일은 남아있고 b 파일은 staging 되지 않은 상태
-# 이제 git add 하고 commit 하거나 그럴 수 있습니다.
+git reset --soft 3c4d5e6    # 커밋만 취소, 변경은 스테이징 상태로 유지
+git reset --mixed 3c4d5e6   # 커밋 + 스테이징 취소, 변경은 파일에 유지
+git reset 3c4d5e6           # 옵션을 안 쓰면 --mixed
+git reset --hard 3c4d5e6    # 커밋 + 스테이징 + 파일 변경까지 모두 버림
 ```
 
-결론은 reset하면서 파일을 아예 지워버리는 게 아니라,
-검토하고 다시 commit 하고 싶으면 `--soft`, `--mixed` 사용해봅시다.
-실은 git reset 어쩌구만 하면 --mixed 옵션이 자동으로 발동됩니다.
+- 파일을 아예 지워 버리는 대신 **검토하고 다시 커밋하고 싶다면 `--soft`나 `--mixed`** 를 쓰자.
+- 자주 쓰는 활용 : **방금 한 커밋을 취소하고 다시 하고 싶을 때**
+
+```bash
+git reset --soft HEAD~1     # 마지막 커밋만 취소 (변경은 스테이징 상태로 남음) → 다시 정리해서 커밋
+```
+
+### 4.2 협업 중에는 reset 금지
+
+- **이미 GitHub에 올려서 공유한 커밋은 reset하지 않는다.** 동료의 저장소에는 그 커밋이 남아 있어서 이력이 어긋나고, 강제로 push하면 **다른 사람의 소스 코드가 사라질 수 있다.**
+- 공유한 커밋을 되돌릴 때는 **`git revert`** 를 쓰자.
+- reset은 아직 push하지 않은 **내 로컬 커밋을 정리할 때** 만 쓰는 것이 원칙이다.
+
+### 4.3 untracked 파일과 git clean
+
+- `git reset --hard`는 **Git이 추적하지 않는 파일(한 번도 `git add` 하지 않은 새 파일)** 은 건드리지 않는다.
+- 이런 파일까지 지우려면 `git clean`을 쓴다.
+
+```bash
+git clean -n     # 무엇이 지워질지 미리 보기 (꼭 먼저 확인!)
+git clean -f     # untracked 파일 삭제
+git clean -fd    # untracked 폴더까지 삭제
+```
+
+---
+
+## 5. 실수로 reset --hard 했다면 : git reflog
+
+reset으로 사라진 커밋도 **바로 영구 삭제되지는 않는다.** Git은 HEAD가 이동한 기록을 **reflog** 에 일정 기간(기본 약 90일) 남겨 둔다.
+
+```bash
+git reflog
+```
+
+```
+3c4d5e6 (HEAD -> main) HEAD@{0}: reset: moving to 3c4d5e6
+5e6f7a8 HEAD@{1}: commit: c 파일 생성        ← 사라진 커밋이 여기 있다!
+3c4d5e6 HEAD@{2}: commit: b 파일 생성
+```
+
+```bash
+git reset --hard 5e6f7a8    # 사라졌던 'c 파일 생성' 시점으로 다시 돌아오기
+```
+
+- reflog는 **내 컴퓨터에만** 있는 기록이다. 다른 사람의 저장소나 GitHub에는 없다.
+- 한 번도 커밋하지 않은 변경은 reflog에도 없으므로 되살릴 수 없다. → **자주 커밋하는 습관** 이 최고의 보험이다.
+
+---
+
+## 6. 이럴 땐 이렇게
+
+| 상황                                                         | 명령어                                      |
+| ------------------------------------------------------------ | ------------------------------------------- |
+| 파일을 잘못 고쳤다. 마지막 커밋 상태로 되돌리고 싶다         | `git restore 파일`                          |
+| `git add`를 잘못했다. 스테이징만 취소하고 싶다               | `git restore --staged 파일`                 |
+| 방금 커밋 메시지에 오타가 있다 (push 전)                     | `git commit --amend -m "새 메시지"`         |
+| 방금 커밋에 파일 하나를 빠뜨렸다 (push 전)                   | `git add 파일` → `git commit --amend --no-edit` |
+| 방금 한 커밋을 취소하고 다시 정리하고 싶다 (push 전)         | `git reset --soft HEAD~1`                   |
+| 최근 커밋 몇 개를 완전히 버리고 싶다 (push 전)               | `git reset --hard HEAD~2`                   |
+| **이미 push한** 커밋을 되돌리고 싶다                         | `git revert 커밋ID`                         |
+| 합친(merge) 브랜치를 되돌리고 싶다 (push 후)                 | `git revert -m 1 merge커밋ID`               |
+| reset --hard로 날린 커밋을 되살리고 싶다                     | `git reflog` → `git reset --hard 커밋ID`    |
+| add 안 한 새 파일들을 모두 지우고 싶다                       | `git clean -n` 확인 → `git clean -fd`       |
+
+> 💡 기준은 하나다. **"이미 다른 사람과 공유(push)했는가?"**
+>
+> - 공유 전 : `reset`, `commit --amend`로 자유롭게 정리해도 된다.
+> - 공유 후 : `revert`로 **기록을 남기며** 되돌린다.
+
+다음 글에서는 내 저장소를 GitHub에 올리는 방법을 배운다. → [06-GitHub에 코드 올리기 : remote, push](/devops/git/06-push)
+
+---
+
+## 참고
+
+- [코딩애플 Git 강의](https://codingapple.com/course/git-and-github/)를 듣고 정리한 내용입니다.
+- [Pro Git - 되돌리기](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-%EB%90%98%EB%8F%8C%EB%A6%AC%EA%B8%B0)
+- [Pro Git - Reset 명확히 알고 가기](https://git-scm.com/book/ko/v2/Git-%EB%8F%84%EA%B5%AC-Reset-%EB%AA%85%ED%99%95%ED%9E%88-%EC%95%8C%EA%B3%A0-%EA%B0%80%EA%B8%B0)
+- [Git 문서 - git reflog](https://git-scm.com/docs/git-reflog)

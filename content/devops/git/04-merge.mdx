@@ -1,121 +1,213 @@
 ---
-title: '04-merge 방법론'
+title: '04-브랜치를 합치는 4가지 방법 - 3-way, fast-forward, rebase, squash'
 date: 2023/01/11
 tags: [DevOps, Git]
 ---
 
-# 1. merge 방법론
+## 1. 한눈에 보기
 
-브랜치를 합칠 때 다양한 방법으로 합칠 수 있습니다.
+브랜치를 합칠 때는 상황과 팀 규칙에 따라 여러 방법을 쓴다.
 
-- 3-way merge
-- fast-forward merge
-- rebase and merge
-- squash and merge
+| 방법                   | 명령어                                        | 결과                                              | 이력 모양              |
+| ---------------------- | --------------------------------------------- | ------------------------------------------------- | ---------------------- |
+| **3-way merge**        | `git merge 브랜치`                            | 두 갈래를 합친 **merge 커밋** 이 새로 생김        | 갈라졌다 합쳐지는 그래프 |
+| **fast-forward merge** | `git merge 브랜치` (조건이 맞으면 자동)       | 새 커밋 없이 main 이름표만 앞으로 이동            | 한 줄                  |
+| **rebase and merge**   | `git rebase main` → `git merge 브랜치`        | 브랜치 커밋들을 main 끝으로 옮긴 뒤 fast-forward  | 한 줄 (커밋은 그대로 여러 개) |
+| **squash and merge**   | `git merge --squash 브랜치` → `git commit`    | 브랜치의 모든 변경을 **커밋 하나** 로 합쳐 main에 추가 | 한 줄 (커밋 1개)     |
 
----
-
-# 2. 3-way merge
-
-브랜치에 각각 신규 commit이 1회 이상 있는 경우 merge 명령을 내리면,
-두 브랜치의 코드를 합쳐서 새로운 commit을 자동으로 생성해주는데,
-이걸 **3-way merge**라고 부릅니다. 이게 **merge의 기본 동작방식**입니다.
+예시에서는 `main`에 `feature` 브랜치를 합친다고 하자.
 
 ---
 
-# 3. fast-forward merge
+## 2. 3-way merge : 기본 방식
 
-새로운 브랜치에만 commit 이 있고 기준이 되는 브랜치에는 신규 commit 이 없는 경우,
-merge 하게 되면 "fast-forward merge 되었습니다" 라고 알려줍니다.
+**두 브랜치 모두에 새 커밋이 있을 때** `git merge`를 하면, Git은 두 브랜치의 내용을 합친 **새로운 merge 커밋** 을 자동으로 만든다. 이것이 merge의 기본 동작이다.
 
-- fast-forward merge
-  - 합칠게 없어서 신규 브랜치의 이름을 **"main 브랜치"**라고 하는 것
-  - "기준이 되는 브랜치에 신규 commit이 없으면" 자동으로 fast-forward merge가 발동됨
-  - 싫으면 **git merge --no-ff 브랜치명** 해서 강제로 3-way merge 할 수도 있음
+```
+merge 전                              merge 후 (git switch main → git merge feature)
+
+main     A───B───D                    main     A───B───D───────M   ← merge 커밋
+              \                                     \         /
+feature        C───E                  feature        C───E───┘
+```
+
+- 왜 이름이 **3-way** 일까? Git은 합칠 때 **세 지점** 을 비교한다.
+  1. 두 브랜치가 갈라진 **공통 조상** (`B`)
+  2. **main** 의 최신 커밋 (`D`)
+  3. **feature** 의 최신 커밋 (`E`)
+  - 공통 조상과 비교해서 한쪽에서만 바뀐 부분은 자동으로 반영하고, **양쪽 모두 같은 곳을 바꿨을 때만 충돌** 로 처리한다.
+- 장점 : 브랜치가 언제 갈라지고 언제 합쳐졌는지 **실제 작업 흐름이 그대로 남는다.**
+- 단점 : 브랜치가 많아지면 그래프가 복잡해지고, main의 `git log`에 브랜치의 자잘한 커밋까지 모두 섞여 보인다.
 
 ---
 
-## 3.1 브랜치 삭제
+## 3. fast-forward merge : 이름표만 앞으로
 
-3-way, fast-forward 아무렇게나 merge 해도, **브랜치를 merge 하고 나면 브랜치가 자동으로 삭제되진 않습니다.**
+**feature 브랜치에만 새 커밋이 있고, main에는 갈라진 뒤로 새 커밋이 없을 때** merge하면, 합칠 것이 없으므로 Git은 **main 이름표를 feature가 있는 곳까지 앞으로 옮기기만** 한다.
+
+```
+merge 전                              merge 후
+
+main     A───B                        main
+              \                                        ↓
+feature        C───E                           A───B───C───E
+                                                       ↑
+                                               feature
+```
+
+- merge 커밋이 생기지 않고, 이력이 **한 줄로 깔끔하게** 유지된다.
+- 터미널에 `Fast-forward`라고 표시된다.
+- 조건이 맞으면 **자동으로** fast-forward가 된다.
 
 ```bash
-git branch -d 브랜치이름 # 병합(merge)이 완료된 브랜치 삭제
-git branch -D 브랜치이름 # 병합(merge)하지 않은 브랜치 삭제
+git merge --no-ff feature    # fast-forward가 가능해도 강제로 merge 커밋을 만든다 (브랜치를 합친 기록을 남기고 싶을 때)
+git merge --ff-only feature  # fast-forward가 가능할 때만 merge, 아니면 거부 (실수로 merge 커밋이 생기는 것 방지)
 ```
 
 ---
 
-# 4. rebase and merge
+## 4. rebase and merge : 시작점을 옮긴 뒤 fast-forward
 
-브랜치를 rebase 하고 나서 merge하는 것도 가능합니다.
+**rebase** 는 **브랜치의 시작점(base)을 다른 커밋으로 옮기는 것** 이다.
 
-rebase는 **브랜치의 시작점을 다른 commit으로 옮겨주는 행위**입니다.
+1. feature 브랜치의 시작점을 **main의 최신 커밋으로 옮긴 다음(rebase)**
+2. 이제 main에는 새 커밋이 없는 상태가 되었으므로 **fast-forward merge** 한다.
 
-1. rebase를 이용해서 신규브랜치의 시작점을 main 브랜치 최근 commit으로 옮긴 다음,
-2. fast-forward merge하는 것
+```
+rebase 전                         rebase 후 (feature에서 git rebase main)        merge 후
 
-이렇게 하는 이유
-
-- **3-way merge 말고 강제로 fast-forward** 하고 싶을 때
-  - 간단하고 짧은 브랜치들은 이거 쓰면 깔끔해보임
-- 단점 : conflict 엔딩 많이 남
-
-일반 3-way merge 대신 rebase & merge 해도 됩니다. 그래서 실제로 rebase and merge 하고 싶으면
-
-1. **새로운 브랜치로 먼저 이동**해서
-2. `git rebase main`하면 됩니다.
-3. 그럼 **브랜치가 main 브랜치 끝으로 이동**하는데 그걸 fast-forward merge하면 됩니다.
+main     A───B───D                main     A───B───D                             main
+              \                                     \                                          ↓
+feature        C───E              feature            C'───E'                     A───B───D───C'───E'
+```
 
 ```bash
-# reabse & merge 하고 싶으면
-git switch 새로운브랜치 # 1. 새로운 브렌치로 이동
+# 1. 합칠 브랜치(feature)로 이동
+git switch feature
 
-# 신규 브랜치의 커밋들을 main 브랜치의 최근의 commit으로 옮김
-git rebase main # 2. git rebase 중심브랜치명
+# 2. feature의 커밋들을 main의 최신 커밋 뒤로 옮김
+git rebase main
 
-# main 브랜치로 이동해서 fast-forward merge 수행
+# 3. main으로 이동해서 fast-forward merge
 git switch main
-git merge 새로운브랜치
+git merge feature
 ```
 
-차례로 입력하면 rebase 끝입니다. rebase & merge를 한 줄로 쉽게 비유하자면 **강제 fast-forward merge**입니다.
-직접 새로운 브랜치 만들고 commit 몇 번 하고 rebase 해봅시다.
+- 한 줄로 비유하면 **"강제 fast-forward merge"** 다.
+- 장점 : merge 커밋 없이 **한 줄의 깔끔한 이력**, 브랜치의 커밋들은 하나하나 그대로 남는다.
+- 단점
+  - 브랜치끼리 차이가 크면 **커밋마다 충돌이 날 수 있어서** 해결이 번거롭다.
+    - 충돌이 나면 해결 → `git add 파일` → `git rebase --continue`
+    - 중간에 그만두려면 `git rebase --abort`
+  - 옮겨진 커밋(`C'`, `E'`)은 내용은 같아도 **새로 만들어진 다른 커밋(해시가 바뀜)** 이다.
 
-물론 단점도 있는데, 브랜치끼리 차이가 너무 많은 경우 rebase하면 충돌이 많이 발생해서 해결하기 귀찮음
+> ⚠️ **rebase의 황금률 : 이미 원격(GitHub)에 올려서 다른 사람과 공유한 브랜치는 rebase하지 않는다.**
+>
+> rebase는 커밋을 새로 만들어 이력을 바꾸기 때문에, 같은 브랜치를 받아 간 동료의 이력과 어긋나 큰 혼란이 생긴다.
+> 혼자 쓰는 브랜치를 정리할 때만 쓰자. (내 브랜치를 rebase한 뒤 원격에 다시 올릴 때는 `git push --force-with-lease`)
+
+> 💡 함께 알아 두면 좋은 rebase 활용
+>
+> - `git pull --rebase` : 원격의 최신 커밋을 받아 올 때 불필요한 merge 커밋 없이 내 커밋을 그 뒤에 쌓기
+> - `git rebase -i HEAD~3` : 최근 커밋 3개를 합치거나, 순서를 바꾸거나, 메시지를 고치는 **대화형 rebase** (PR 올리기 전 커밋 정리에 유용)
 
 ---
 
-# 5. squash and merge
+## 5. squash and merge : 커밋 하나로 압축
 
-모든 브랜치를 3-way merge 해버리면 나중에 참사가 일어날 수 있습니다.
+모든 브랜치를 3-way merge하다 보면 이런 문제가 생긴다.
 
-왜냐면 다음과 같은 현상이 있습니다.
+1. merge 커밋과 갈래가 많아져 **그래프가 매우 복잡** 해진다.
+2. main 브랜치의 `git log`에 브랜치에서 만든 `오타 수정`, `테스트`, `다시 수정` 같은 **자잘한 커밋이 모두 섞여** 나온다.
 
-1. **3-way merge된 것들은 매우 복잡**해보임
-2. main 브랜치 git log 출력해보면, 3-way merge된 브랜치들의 commit 내역도 다 같이 출력되어서 더러워짐
+**squash(으깨다)** 는 브랜치의 모든 변경을 **커밋 하나로 합쳐서** main에 새로 만든다.
+브랜치의 커밋들을 이어 붙이는 게 아니라, **변경 내용만 main으로 "텔레포트"** 하는 셈이다.
 
-이러기 싫으면 **rebase**아니면 **squash and merge**하면 됩니다.
-새 브랜치에 있던 commit 들을 연결해주는 게 아니라 떼와서 main 브랜치에 붙여주기 때문에1번과 2번걱정을 안 해도 됨
+```
+merge 전                              merge 후
 
-rebase는 아까 배웠고, squash and merge이거 하면 어떻게 되냐면,
-3-way merge처럼 선으로 이어주지 않고, 새 브랜치에 있던 코드 변경사항들이 **main 브랜치로** **텔레포트**합니다.
-
-그럼 이제 main 브랜치의 git log 출력해볼 때, merge 완료된 브랜치의 commit 같은 것들은 출력되지 않습니다.
-
-```sh
-git switch main
-git merge --squash 브랜치명 # squash merge
-git commit -m '메세지'
+main     A───B───D                    main     A───B───D───S   ← C+E+F를 합친 커밋 하나
+              \                                     \
+feature        C───E───F              feature        C───E───F (main 이력과 연결되지 않음)
 ```
 
-**squash and merge**하는 법은 그냥 `--squash`옵션을 추가하면 끝입니다.
-브랜치에서 만들어놨던 많은 commit들을 다 합쳐서 하나의 commit으로 main 브랜치에 생성해줍니다.
+```bash
+git switch main
+git merge --squash feature    # feature의 변경을 스테이징만 해 둠 (아직 커밋 안 됨)
+git commit -m "쿠폰 기능 추가"  # 하나의 커밋으로 생성
+```
+
+- 장점 : main 이력에 **"기능 하나 = 커밋 하나"** 로 깔끔하게 남는다. 나중에 기능 단위로 되돌리기도 쉽다.
+- 단점
+  - 브랜치 안의 세세한 작업 과정(커밋 하나하나)은 main 이력에 남지 않는다.
+  - Git 입장에서는 feature 브랜치가 "합쳐지지 않은" 상태로 보여서, 브랜치를 지울 때 `git branch -d`가 거부된다. → `git branch -D`로 삭제
+  - squash한 브랜치에서 계속 작업하고 다시 합치면 충돌이 나기 쉽다. **squash 후에는 브랜치를 지우고 새로 만드는 것** 이 좋다.
 
 ---
 
-# 6. 결론
+## 6. 합친 뒤 정리 : 브랜치 삭제
 
-merge를 잔뜩 해놓으면 나중에 git log 그래프가 매우 복잡해질 수 있습니다.
-그게 싫으면 **squash**해보십시오. 또는 **rebase 해도 마찬가지로 해결**가능합니다.
-보통 회사 프로젝트마다, 브랜치마다 merge 방법 가이드라인이 있습니다.
+어떤 방법으로 merge하든, **merge가 끝나도 브랜치는 자동으로 삭제되지 않는다.**
+
+```bash
+git branch -d 브랜치이름   # merge가 완료된 브랜치 삭제
+git branch -D 브랜치이름   # merge하지 않은(또는 squash한) 브랜치까지 강제 삭제 ⚠️
+```
+
+- GitHub에서 PR을 merge한 뒤에는 원격 브랜치도 지운다. (PR 화면의 **Delete branch** 버튼, 또는 저장소 설정에서 자동 삭제 켜기)
+
+---
+
+## 7. GitHub Pull Request의 merge 버튼
+
+실무에서는 터미널보다 **GitHub의 Pull Request 화면** 에서 merge하는 경우가 더 많다. merge 버튼 옆 화살표를 누르면 세 가지 방법을 고를 수 있다.
+
+| 버튼                      | 해당하는 방법                         |
+| ------------------------- | ------------------------------------- |
+| **Create a merge commit** | 3-way merge (`--no-ff`)               |
+| **Squash and merge**      | squash and merge                      |
+| **Rebase and merge**      | rebase and merge                      |
+
+- 저장소 **Settings → General → Pull Requests** 에서 팀이 허용할 방법만 켜 둘 수 있다.
+
+---
+
+## 8. 어떤 방법을 써야 할까?
+
+정답은 없고, **회사·프로젝트마다 가이드라인이 있다.** 많이 쓰는 조합은 다음과 같다.
+
+| 상황                                                   | 추천                                              |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| 기능 브랜치를 main에 합칠 때 (PR 단위)                 | **Squash and merge** ✅ (기능 하나 = 커밋 하나)    |
+| 커밋을 이미 의미 있는 단위로 잘 나눠 두었을 때         | **Rebase and merge** (커밋을 살린 채 한 줄 이력)  |
+| 브랜치가 합쳐진 흐름을 기록으로 남기고 싶을 때 (release 브랜치 등) | **Merge commit** (3-way, `--no-ff`)   |
+| 내 로컬 브랜치를 최신 main에 맞출 때                   | `git rebase main` 또는 `git pull --rebase`        |
+
+- merge를 잔뜩 해 두면 나중에 `git log` 그래프가 매우 복잡해진다. 깔끔한 이력을 원한다면 **squash** 나 **rebase** 를 활용하자.
+- 반대로 이력을 너무 깔끔하게만 만들려고 하면 작업 과정이 사라진다. **팀이 이력을 어떻게 읽고 싶은지** 를 기준으로 정하자.
+
+---
+
+## 9. 정리
+
+| 하고 싶은 것                          | 명령어                                           |
+| ------------------------------------- | ------------------------------------------------ |
+| 기본 merge (필요하면 merge 커밋 생성) | `git merge 브랜치`                               |
+| 항상 merge 커밋 만들기                | `git merge --no-ff 브랜치`                       |
+| fast-forward만 허용                   | `git merge --ff-only 브랜치`                     |
+| rebase 후 merge                       | `git switch 브랜치` → `git rebase main` → `git switch main` → `git merge 브랜치` |
+| rebase 충돌 해결 후 계속 / 취소       | `git rebase --continue` / `git rebase --abort`   |
+| 커밋 하나로 압축해서 merge            | `git merge --squash 브랜치` → `git commit`       |
+| 브랜치 삭제                           | `git branch -d 브랜치` (squash 후에는 `-D`)      |
+
+다음 글에서는 실수로 망가뜨린 코드를 되돌리는 방법을 배운다. → [05-실수 되돌리기 : restore, revert, reset](/devops/git/05-revert-reset-restore)
+
+---
+
+## 참고
+
+- [코딩애플 Git 강의](https://codingapple.com/course/git-and-github/)를 듣고 정리한 내용입니다.
+- [Pro Git - 브랜치와 Merge의 기초](https://git-scm.com/book/ko/v2/Git-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EB%B8%8C%EB%9E%9C%EC%B9%98%EC%99%80-Merge-%EC%9D%98-%EA%B8%B0%EC%B4%88)
+- [Pro Git - Rebase 하기](https://git-scm.com/book/ko/v2/Git-%EB%B8%8C%EB%9E%9C%EC%B9%98-Rebase-%ED%95%98%EA%B8%B0)
+- [GitHub Docs - Pull Request merge 방법](https://docs.github.com/ko/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github)
+- [Learn Git Branching](https://learngitbranching.js.org/?locale=ko)

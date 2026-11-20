@@ -1,108 +1,220 @@
 ---
-title: '10-코드 보관-stash'
+title: '10-작업 임시 보관하기 - stash'
 date: 2023/01/11
 tags: [DevOps, Git]
 ---
 
-# 1. git stash : 코드 잠깐 보관하기
+## 1. git stash란?
 
-이상한 코드가 있다고 칩시다.
-그 코드를 잠깐 치워놓고 개발하고 싶으면 주석처리해도 되겠지만 `git stash` 명령어를 이용해도 잠깐 코드를 치울 수 있습니다.
+**stash = (물건을) 넣어 두다, 숨겨 두다**
+
+`git stash`는 **아직 커밋하지 않은 변경 사항을 임시 공간에 치워 두고, 작업 폴더를 마지막 커밋 상태로 깨끗하게 만드는** 명령어다. 치워 둔 변경은 나중에 다시 꺼내 쓸 수 있다.
+
+이럴 때 쓴다.
+
+- **기능 개발 중에 급한 버그 수정 요청이 왔다.** 하던 작업은 아직 커밋하기 애매한데, 다른 브랜치로 이동해야 한다.
+- 이상한 코드가 있는데, 지우기는 아깝고 **잠깐 치워 두고** 개발하고 싶다.
+- 기능 A, B를 동시에 만들다가 **A만 먼저 커밋** 해야 한다. B를 잠시 치워 둔다.
+- `git pull`을 해야 하는데 내 수정 사항 때문에 거부된다.
+
+```
+작업 폴더 (수정 중)  ──git stash──▶  stash 보관함
+     ↓ 깨끗해짐                          │
+  다른 일 처리 (브랜치 이동, 버그 수정, pull…)
+     ↓                                   │
+작업 폴더  ◀──git stash pop─────────────┘  수정 내용 복원
+```
+
+---
+
+## 2. 변경 사항 보관하기 : git stash
+
+실습해 보자.
 
 ```bash
-# 새 프로젝트 폴더 app 생성
+mkdir stash-practice && cd stash-practice
 git init
 
-# a 라는 파일 생성 후 수정
-# ------------------------------a.txt
-aaaaaaaaaaaaa
-# -----------------------------------
-
+echo "aaaaaaaaaaaaa" > a.txt
 git add .
-git commit -m '어쩌구'
-
-# a의 파일의 수정
-# ------------------------------a.txt
-aaaaaaaaaaaaa
-bbbbbbbb # 잠깐 잘래내서 보관하고 싶음
-# -----------------------------------
-
-git stash # 임시 공간으로 이동
-git stash list # 보관된 코드 목록 조회
-stash@{0}: WIP on main: 8978be9 어쩌구
-
-# 최근 commit과의 차이점을 전부 보관해주는 git stash
-# 다만, staging 안해놓은 새 파일은 stash가 안될 수도 있음
-
-# ------------------------------a.txt
-aaaaaaaaaaaaa
-ccccccc
-# -----------------------------------
-
-# 📝 git stash save '메모'
-git stash save 'ccc라고 적음' # 메모도 함께 입력 가능
+git commit -m "a 파일 생성"
 ```
 
-터미널에 git stash 입력하면 방금 작성한 bbbb 어쩌구 코드는 잠깐 다른 공간에 보관됩니다.
-(그래서 파일들이 최근 commit 상태로 되돌아갑니다.)
+`a.txt`에 한 줄을 추가한다. 이 코드를 잠깐 치워 두고 싶다.
 
-- staging 된 것이든 안 된 것이든 추적중인 파일은 다 이동됩니다.
-- 새로 만든 파일인데 staging 안 되었다면 이동안됩니다.
-- ` git stash save '메모'`로 메모도 함께 입력 가능합니다.
-- `git stash list`는 현재 stash 되어있는 코드 목록을 전부 출력해주는 명령어입니다.
-
----
-
-# 2. 보관했던 코드 다시 불러오기
-
-`git stash` 했던 코드가 여러개 있으면 가장 최근에 보관했던 코드부터 먼저 불러옵니다.
-
-```bash
-git stash pop # 가장 최근 stash 불러오기
+```txt
+aaaaaaaaaaaaa
+bbbbbbbb      ← 잠깐 치워 두고 싶은 코드
 ```
 
-가장 최근에 들어온 것 부터 먼저나갑니다.
-물론 현재 코드와 겹치는 부분이 있으면 conflict나니까 알아서 해결하면 됩니다.
+```bash
+git stash          # 변경 사항을 보관함으로 이동
+git stash list     # 보관함 목록 보기
+# stash@{0}: WIP on main: 8978be9 a 파일 생성
+```
 
----
+- `git stash`를 하면 `bbbbbbbb` 줄은 보관함으로 옮겨지고, **파일은 마지막 커밋 상태로 돌아간다.**
+- `WIP`는 Work In Progress(작업 중)의 약자다.
 
-# 3. stash 관련 여러 명령어들
+### 2.1 메모와 함께 보관하기
 
-삭제할 id는 `git stash list` 하면 보이는 0, 1, 2 이런 숫자 넣으면 됩니다.
+stash를 여러 개 쌓으면 무엇이 무엇인지 헷갈린다. **메시지** 를 붙여 두자.
 
 ```bash
+# a.txt에 ccccccc 줄 추가 후
+git stash push -m "ccc 실험 코드"
+
 git stash list
-stash@{0}: WIP on main: 8978be9 어쩌구
-
-# 특정 stash 삭제
-# 📝 git stash drop 삭제할id
-git stash drop 0
-
-git stash clear # 모든 stash 삭제
+# stash@{0}: On main: ccc 실험 코드
+# stash@{1}: WIP on main: 8978be9 a 파일 생성
 ```
 
-전체 말고 일부 코드만 `git stash` 하고싶으면 다음 명령어 씁시다.
-그럼 파일을 훑어주면서 stash할 지 의견을 물어보는데 y/n 으로 잘 대답하면 됩니다.
+- 예전에는 `git stash save "메모"`를 썼지만, 지금은 **`git stash push -m "메모"`** 를 쓴다. (`save`는 더 이상 권장되지 않음)
+
+### 2.2 무엇이 보관될까?
+
+| 파일 상태                                       | `git stash` | `git stash -u` | `git stash -a` |
+| ----------------------------------------------- | ----------- | -------------- | -------------- |
+| 추적 중인 파일의 수정 (스테이징 여부 무관)      | ✅          | ✅             | ✅             |
+| 새로 만들고 `git add` 한 파일 (staged)          | ✅          | ✅             | ✅             |
+| 새로 만들고 `git add` 안 한 파일 (untracked)    | ❌          | ✅             | ✅             |
+| `.gitignore`로 무시된 파일                      | ❌          | ❌             | ✅             |
+
+- 기본 `git stash`는 **Git이 추적하는 파일만** 보관한다. 새로 만든 파일까지 함께 치우려면 **`-u`(`--include-untracked`)** 를 붙이자.
+
+### 2.3 일부만 보관하기
 
 ```bash
-git stash -p
+git stash push -m "메모" -- src/b.ts src/c.ts   # 특정 파일만 보관
+git stash push -p                              # 변경 조각마다 보관할지 y/n으로 물어봄
+git stash push --staged                        # 스테이징된 변경만 보관 (Git 2.35+)
 ```
 
 ---
 
-# 4. 왜쓰나
+## 3. 보관한 코드 다시 불러오기
 
-**Q. 주석처리해놓는 게 더 쉬울듯**
+```bash
+git stash pop        # 가장 최근 stash를 꺼내서 적용하고, 보관함에서 삭제
+git stash apply      # 가장 최근 stash를 적용하지만, 보관함에는 남겨 둠
+```
 
-실은 코드를 주석처리하는거랑 용도가 비슷한데 주석처리된 코드는 commit할 때 반영됩니다.
-그렇게 되면 주석도 commit 기록에 남아서 기록이 더러워질 수 있습니다.
-주석처리한 내용을 commit 해버리기 싫을 때 git stash 쓰면 유용합니다.
+- stash는 **스택(stack)** 구조다. 가장 **최근에 넣은 것부터 먼저** 나온다. (`stash@{0}`이 가장 최근)
+- 특정 stash를 꺼내려면 번호를 지정한다.
 
-또는 기능 A, B를 만드는데 기능A는 완성되었고, 기능B는 완성이 안 됐을 때,
-팀장이 "기능A 부분만 빨리 commit하고 merge 하라"고 하면 그럴 때 기능B를 git stash 해놔도 좋을듯요.
+```bash
+git stash pop stash@{1}      # 1번 stash 꺼내기
+git stash apply 1            # 번호만 써도 된다
+```
+
+| 명령어       | 작업 폴더에 적용 | 보관함에서 삭제 | 언제?                                         |
+| ------------ | ---------------- | --------------- | --------------------------------------------- |
+| `pop`        | ✅               | ✅              | 보통은 이것                                   |
+| `apply`      | ✅               | ❌              | 같은 변경을 여러 브랜치에 적용해 보고 싶을 때 |
+
+### 3.1 꺼낼 때 충돌이 나면
+
+stash를 보관한 뒤 같은 줄을 다른 내용으로 고쳤다면, 꺼낼 때 **충돌(conflict)** 이 날 수 있다.
+
+- 해결 방법은 merge 충돌과 같다. 충돌 표시를 정리하고 남길 코드만 남긴다. → [03-충돌 해결](/devops/git/03-branch-merge)
+- 충돌이 나면 `git stash pop`을 했어도 **stash가 보관함에 그대로 남아 있다.** 해결을 마친 뒤 `git stash drop`으로 직접 지운다.
+
+### 3.2 꺼내기 전에 내용 확인하기
+
+```bash
+git stash show              # 가장 최근 stash에서 바뀐 파일 목록
+git stash show -p           # 실제 변경 내용(diff)까지 보기
+git stash show -p stash@{1} # 특정 stash 내용 보기
+```
 
 ---
 
-**Q. 브랜치 새로 만들어서 거기다 코드짜놓는거랑 다를바 없는데요?**
+## 4. stash 관리 명령어
 
-들킴. 간단히 브랜치만들어서 거기 보관하는 것도 나쁘지않습니다.
+```bash
+git stash list               # 보관함 목록
+git stash drop               # 가장 최근 stash 삭제
+git stash drop stash@{1}     # 특정 stash 삭제 (git stash drop 1 도 가능)
+git stash clear              # 모든 stash 삭제 ⚠️ 되돌리기 어려움
+git stash branch 브랜치이름   # stash를 만들었던 시점에서 새 브랜치를 만들고, 그 브랜치에 stash 적용
+```
+
+- `git stash branch`는 stash를 꺼낼 때 충돌이 심하거나, **치워 둔 작업을 아예 별도 브랜치에서 이어 가고 싶을 때** 유용하다.
+
+---
+
+## 5. 실전 시나리오 : 급한 버그 수정 요청
+
+`feature/coupon` 브랜치에서 개발 중인데, main에서 급한 버그를 고쳐 달라는 요청이 왔다.
+
+```bash
+# 1. 하던 작업을 보관
+git stash push -u -m "쿠폰 작업 중"
+
+# 2. main으로 이동해서 버그 수정
+git switch main
+git switch -c hotfix/login
+# 수정 → 커밋 → push → PR
+
+# 3. 원래 브랜치로 돌아와서 작업 복원
+git switch feature/coupon
+git stash pop
+```
+
+> 💡 stash 없이 브랜치를 이동하면, 커밋하지 않은 변경이 **다른 브랜치로 따라가거나** 충돌 때문에 이동이 **거부** 될 수 있다.
+
+---
+
+## 6. 왜 쓸까? 다른 방법과 비교
+
+**Q. 주석 처리해 두는 게 더 쉽지 않나?**
+
+- 용도는 비슷하지만, **주석 처리한 코드는 커밋할 때 그대로 반영된다.** 주석이 커밋 기록에 남아 이력이 지저분해진다.
+- 주석 처리한 내용을 커밋하기 싫을 때 `git stash`가 유용하다.
+- 기능 A는 완성됐고 B는 미완성인데, 팀장이 "A만 빨리 커밋하고 merge하라"고 하면 B를 stash해 두면 된다. (변경이 같은 파일에 섞여 있다면 `git stash push -p`로 B 부분만 골라 보관)
+
+**Q. 브랜치를 새로 만들어서 거기에 커밋해 두는 거랑 다를 바 없지 않나?**
+
+- 들켰다. 간단히 브랜치를 만들어 **임시 커밋(WIP 커밋)** 으로 보관하는 것도 좋은 방법이다.
+- 상황에 따라 골라 쓰자.
+
+| 방법                      | 장점                                          | 단점                                        | 추천 상황                       |
+| ------------------------- | --------------------------------------------- | ------------------------------------------- | ------------------------------- |
+| **git stash**             | 명령어 하나로 빠르게 치우고 꺼냄              | 오래 두면 무슨 내용이었는지 잊음, 내 컴퓨터에만 있음 | **몇 분~몇 시간** 의 짧은 보관 |
+| **WIP 커밋 + 브랜치**     | 이력에 남아 안전, push하면 다른 컴퓨터에서도 이어서 작업 | 나중에 커밋 정리(reset, squash) 필요 | **며칠 이상** 이어질 작업       |
+| **git worktree**          | 브랜치마다 **별도 폴더** 를 만들어 동시에 작업 | 폴더가 늘어남, 개념이 조금 낯섦             | 급한 일과 하던 일을 **동시에** 해야 할 때 |
+
+```bash
+# worktree : 하던 작업은 그대로 두고, 다른 폴더에서 main을 열어 버그 수정
+git worktree add ../hotfix-folder main
+```
+
+> ⚠️ stash는 **내 컴퓨터에만** 있고 원격(GitHub)에 올라가지 않는다. 오래 묵히다 잊어버리기 쉬우니, 중요한 작업은 브랜치에 커밋해 두자.
+
+---
+
+## 7. 정리
+
+| 하고 싶은 것                         | 명령어                                  |
+| ------------------------------------ | --------------------------------------- |
+| 변경 사항 보관                       | `git stash`                             |
+| 메모와 함께 보관                     | `git stash push -m "메모"`              |
+| 새 파일(untracked)까지 보관          | `git stash -u`                          |
+| 일부만 골라 보관                     | `git stash push -p`                     |
+| 보관함 목록                          | `git stash list`                        |
+| 내용 확인                            | `git stash show -p`                     |
+| 꺼내서 적용 + 삭제                   | `git stash pop`                         |
+| 꺼내서 적용 (보관함에 유지)          | `git stash apply`                       |
+| 특정 stash 삭제 / 전체 삭제          | `git stash drop stash@{n}` / `git stash clear` |
+| stash로 새 브랜치 만들기             | `git stash branch 브랜치이름`           |
+
+다음 글에서는 GitHub를 더 잘 쓰는 단축키, 프로필 꾸미기, 좋은 커밋 메시지 규칙을 알아본다. → [11-GitHub 활용 팁 : 단축키, 프로필, 커밋 메시지](/devops/git/11-github-profile)
+
+---
+
+## 참고
+
+- [코딩애플 Git 강의](https://codingapple.com/course/git-and-github/)를 듣고 정리한 내용입니다.
+- [Pro Git - Stashing과 Cleaning](https://git-scm.com/book/ko/v2/Git-%EB%8F%84%EA%B5%AC-Stashing%EA%B3%BC-Cleaning)
+- [Git 문서 - git stash](https://git-scm.com/docs/git-stash)
+- [Git 문서 - git worktree](https://git-scm.com/docs/git-worktree)
