@@ -66,13 +66,16 @@ export default {
     type: 'separator',
     title: '(9) 배포',
   },
+  'front-deploy': '프론트엔드 배포',
   deploy: '배포',
   '-- (10) 3D & 인터랙티브 --': {
     type: 'separator',
     title: '(10) 3D & 인터랙티브',
   },
+  'front-interactive': '3D & 인터랙티브',
   '-- (11) 기타 --': {
     type: 'separator',
     title: '(11) 기타',
   },
+  'front-etc': '프론트엔드 기타 주제',
 }
