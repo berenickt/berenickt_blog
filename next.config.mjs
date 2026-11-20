@@ -36,6 +36,11 @@ const nextConfig = {
       ['/mobile/reactNative', '/mobile/react-native'],
       ['/front/react-test-lib', '/frontend/react-testing-library'],
       ['/front/nextjs/11-API-Ref', '/frontend/nextjs/11-api-reference'],
+      // AWS 서비스 명·종류, 클라우드 배포 전략, 프론트 단계별 AWS 배포 → 한 페이지로 통합
+      ['/devops/aws-service-name', '/devops/aws-services-deploy'],
+      ['/devops/aws-service-type', '/devops/aws-services-deploy'],
+      ['/devops/distribute', '/devops/aws-services-deploy'],
+      ['/devops/aws-front-distribute', '/devops/aws-services-deploy'],
       // 최상위 폴더명 변경 (구체적인 경로보다 뒤에 두어야 한 번에 이동)
       ['/front', '/frontend'],
       ['/back', '/backend'],

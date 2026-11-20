@@ -8,11 +8,8 @@ export default {
     title: '(1) Cloud 서비스 제공업체',
   },
   aws: 'AWS',
-  'aws-service-name': 'AWS 서비스 명',
-  'aws-service-type': 'AWS 서비스 종류',
-  distribute: '클라우드 배포 전략',
-  'aws-front-distribute': '프론트 단계별 AWS 배포',
-  'next-trailing-slash': 'NextJs 트레일링 슬래쉬',
+  'aws-services-deploy': 'AWS 서비스와 배포 전략',
+  'next-trailing-slash': 'Next.js Trailing Slash',
   '-- (2) 버전관리 도구 --': {
     type: 'separator',
     title: '(2) 버전관리 도구',
